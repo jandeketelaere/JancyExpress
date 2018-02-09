@@ -2,7 +2,7 @@
   "profiles": {
     "JancyExpressSample": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "api/helloworld/jan",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

@@ -14,7 +14,7 @@ namespace JancyExpressSample.Handlers.HelloWorld
             return (request, response, routeData) =>
             {
                 var name = request.HttpContext.GetRouteValue("name");
-                response.ContentType = "application/json";
+                //response.ContentType = "application/json";
                 return response.WriteAsync(JsonConvert.SerializeObject(new { name = name }));
             };
         }
