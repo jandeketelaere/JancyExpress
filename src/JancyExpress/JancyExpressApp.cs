@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace JancyExpress
 {
-    public abstract class JancyModule
+    public class JancyExpressApp
     {
         public List<Route> Routes { get; }
 
-        public JancyModule()
+        public JancyExpressApp()
         {
             Routes = new List<Route>();
         }
@@ -22,6 +22,16 @@ namespace JancyExpress
                 Verb = "GET",
                 Template = template,
                 Handler = handler
+            });
+        }
+
+        public void Get(string template, IRequestHandler handler)
+        {
+            Routes.Add(new Route
+            {
+                Verb = "GET",
+                Template = template,
+                Handler = handler.Handle()
             });
         }
     }

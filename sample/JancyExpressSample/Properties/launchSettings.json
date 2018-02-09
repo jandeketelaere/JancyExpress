@@ -3,7 +3,7 @@
     "JancyExpressSample": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/hello/world",
+      "launchUrl": "api/helloworld/jan",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
