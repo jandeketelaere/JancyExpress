@@ -11,11 +11,10 @@ namespace JancyExpressSample.Handlers.HelloWorld
     {
         public Func<HttpRequest, HttpResponse, RouteData, Task> Handle()
         {
-            return (request, response, routeData) =>
+            return async (request, response, routeData) =>
             {
                 var name = request.HttpContext.GetRouteValue("name");
-                //response.ContentType = "application/json";
-                return response.WriteAsync(JsonConvert.SerializeObject(new { name = name }));
+                await response.WriteAsync(JsonConvert.SerializeObject(new { name = name }));
             };
         }
     }

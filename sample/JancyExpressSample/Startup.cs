@@ -40,24 +40,33 @@ namespace JancyExpressSample
         {
             applicationBuilder.UseJancyExpress(app =>
             {
-                //app.Get("api/helloworld/{name}", serviceProvider.GetService<Handlers.HelloWorld.Get>());
+                app.Use(async (request, response, routeData, next) =>
+                {
+                    response.ContentType = "application/json";
+                    await response.WriteAsync(JsonConvert.SerializeObject(new { name = "global decorator1" }));
+                    await next();
+                },
+                async (request, response, routeData, next) =>
+                {
+                    await response.WriteAsync(JsonConvert.SerializeObject(new { name = "global decorator2" }));
+                    await next();
+                });
 
-                app.Get
-                (
-                    "api/helloworld/{name}",
-                    serviceProvider.GetService<Handlers.HelloWorld.Get>(),
+                app.Get("api/helloworld2/{name}",
+                    serviceProvider.GetService<Handlers.HelloWorld.Get>().Handle());
+
+                app.Get("api/helloworld/{name}",
                     async (request, response, routeData, next) =>
                     {
-                        //response.ContentType = "application/json";
-                        await response.WriteAsync(JsonConvert.SerializeObject(new { name = "decorator2" }));
+                        await response.WriteAsync(JsonConvert.SerializeObject(new { name = "decorator1" }));
                         await next();
                     },
                     async (request, response, routeData, next) =>
                     {
-                        response.ContentType = "application/json";
-                        await response.WriteAsync(JsonConvert.SerializeObject(new { name = "decorator1" }));
+                        await response.WriteAsync(JsonConvert.SerializeObject(new { name = "decorator2" }));
                         await next();
-                    }
+                    },
+                    serviceProvider.GetService<Handlers.HelloWorld.Get>().Handle()
                 );
             });
         }
