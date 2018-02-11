@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using System;
+using System.Threading.Tasks;
 
 namespace JancyExpress
 {
@@ -27,6 +30,14 @@ namespace JancyExpress
             applicationBuilder.UseRouter(routeBuilder.Build());
 
             return applicationBuilder;
+        }
+
+        public static Task ReturnJson<T>(this HttpResponse response, int httpStatusCode, T value)
+        {
+            response.ContentType = "application/json";
+            response.StatusCode = httpStatusCode;
+
+            return response.WriteAsync(JsonConvert.SerializeObject(value));
         }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 using System;
+using System.Reflection;
 
 namespace JancyExpressSample
 {
@@ -36,9 +37,11 @@ namespace JancyExpressSample
         {
             services.UseJancyExpress();
 
+            var assembly = Assembly.GetAssembly(typeof(Startup));
+
             RegisterLogging(services);
-            RegisterRequestHandlers(services);
-            RegisterMiddleware(services);
+            RegisterRequestHandlers(services, assembly);
+            RegisterMiddleware(services, assembly);
         }
 
         private static void RegisterLogging(IServiceCollection services)
@@ -47,18 +50,18 @@ namespace JancyExpressSample
             services.AddSingleton<IJancyLogger, JancyLogger>();
         }
 
-        private static void RegisterRequestHandlers(IServiceCollection services)
+        private static void RegisterRequestHandlers(IServiceCollection services, Assembly assembly)
         {
-            services.Scan(scan => scan.FromAssemblyOf<Handlers.HelloWorld.Get>()
+            services.Scan(scan => scan.FromAssemblies(assembly)
                 .AddClasses(classes => classes.AssignableTo(typeof(IRequestHandler)))
                 .AsSelf()
                 .WithScopedLifetime()
             );
         }
 
-        private static void RegisterMiddleware(IServiceCollection services)
+        private static void RegisterMiddleware(IServiceCollection services, Assembly assembly)
         {
-            services.Scan(scan => scan.FromAssemblyOf<Middleware.ExceptionMiddleware>()
+            services.Scan(scan => scan.FromAssemblies(assembly)
                 .AddClasses(classes => classes.AssignableTo(typeof(IRequestHandlerMiddleware)))
                 .AsSelf()
                 .WithScopedLifetime()
@@ -74,19 +77,9 @@ namespace JancyExpressSample
                     serviceProvider.GetService<Middleware.ExceptionMiddleware>().Handle(),
                     serviceProvider.GetService<Middleware.RequestResponseLoggingMiddleware>().Handle());
 
-                app.Get("api/helloworld2/{name}",
-                    serviceProvider.GetService<Handlers.HelloWorld.Get>().Handle());
-
-                app.Get("api/helloworld/{name}",
-                    async (request, response, routeData, next) =>
-                    {
-                        await next();
-                    },
-                    async (request, response, routeData, next) =>
-                    {
-                        await next();
-                    },
-                    serviceProvider.GetService<Handlers.HelloWorld.Get>().Handle()
+                app.Get("api/apple/simpleget/{name}",
+                    serviceProvider.GetService<Features.Apple.SimpleGet.Validator>().Handle(),
+                    serviceProvider.GetService<Features.Apple.SimpleGet.Handler>().Handle()
                 );
             });
         }
