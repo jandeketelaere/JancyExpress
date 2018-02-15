@@ -1,4 +1,5 @@
 ﻿using JancyExpress;
+using JancyExpress.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System;
@@ -12,9 +13,9 @@ namespace JancyExpressSample.Features.Apple.SimpleGet
         {
             return async (request, response, routeData) =>
             {
-                var name = request.HttpContext.GetRouteValue("name") as string;
+                var name = routeData.As<string>("name");
 
-                await response.ReturnJson(200, new { name });
+                await response.AsJson(200, new { name });
             };
         }
     }

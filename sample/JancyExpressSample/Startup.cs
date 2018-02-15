@@ -1,4 +1,5 @@
 ﻿using JancyExpress;
+using JancyExpress.Extensions;
 using JancyExpressSample.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
