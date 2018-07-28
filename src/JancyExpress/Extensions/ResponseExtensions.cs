@@ -6,7 +6,7 @@ namespace JancyExpress.Extensions
 {
     public static class ResponseExtensions
     {
-        public static Task AsJson<T>(this HttpResponse response, int httpStatusCode, T value)
+        public static Task WriteJson<T>(this HttpResponse response, int httpStatusCode, T value)
         {
             response.ContentType = "application/json";
             response.StatusCode = httpStatusCode;

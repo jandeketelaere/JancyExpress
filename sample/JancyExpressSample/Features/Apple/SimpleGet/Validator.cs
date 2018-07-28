@@ -16,7 +16,7 @@ namespace JancyExpressSample.Features.Apple.SimpleGet
                 var name = routeData.As<string>("name");
 
                 if (string.IsNullOrEmpty(name))
-                    return response.AsJson(400, new { ErrorMessage = "Name cannot be empty" });
+                    return response.WriteJson(400, new { ErrorMessage = "Name cannot be empty" });
 
                 return next();
             };

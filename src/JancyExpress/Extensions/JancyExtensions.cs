@@ -12,14 +12,14 @@ namespace JancyExpress.Extensions
             return services.AddRouting();
         }
 
-        public static IApplicationBuilder UseJancyExpress(this IApplicationBuilder applicationBuilder, Action<JancyExpressApp> action)
+        public static IApplicationBuilder UseJancyExpress(this IApplicationBuilder applicationBuilder, IServiceProvider serviceProvider, Action<JancyExpressApp> action)
         {
             var routeBuilder = new RouteBuilder(applicationBuilder);
-            var app = new JancyExpressApp();
+            var app = new JancyExpressApp(serviceProvider);
 
             action(app);
 
-            foreach (var route in app.Routes)
+            foreach (var route in app.GenerateRoutes())
             {
                 routeBuilder.MapVerb(route.Verb, route.Template, route.Handler);
             }

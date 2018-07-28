@@ -1,36 +1,32 @@
 ﻿using JancyExpress;
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System.IO;
 using JancyExpressSample.Infrastructure;
 
-namespace JancyExpressSample.Middleware
+namespace JancyExpressSample.Decorators
 {
-    public class RequestResponseLoggingMiddleware : IRequestHandlerMiddleware
+    public class RequestResponseLoggingDecorator<TRequest, TResponse> : IHttpHandlerDecorator<TRequest, TResponse>
     {
         private readonly IJancyLogger _jancyLogger;
 
-        public RequestResponseLoggingMiddleware(IJancyLogger jancyLogger)
+        public RequestResponseLoggingDecorator(IJancyLogger jancyLogger)
         {
             _jancyLogger = jancyLogger;
         }
 
-        public Func<HttpRequest, HttpResponse, RouteData, Func<Task>, Task> Handle()
+        public async Task Handle(HttpRequest httpRequest, HttpResponse httpResponse, RouteData routeData, IApiHandler<TRequest, TResponse> apiHandler, HttpHandlerDelegate<Task> next)
         {
-            return async (request, response, routeData, next) =>
-            {
-                _jancyLogger.LogInfo(await GetRequestLogging(request), "Request", request.HttpContext.TraceIdentifier);
+            _jancyLogger.LogInfo(await GetRequestLogging(httpRequest), "Request", httpRequest.HttpContext.TraceIdentifier);
+            
+            var originalResponseBodyStream = httpResponse.Body;
+            var copyResponseBodyStream = new MemoryStream();
+            httpResponse.Body = copyResponseBodyStream;
 
-                var originalResponseBodyStream = response.Body;
-                var copyResponseBodyStream = new MemoryStream();
-                response.Body = copyResponseBodyStream;
+            await next();
 
-                await next();
-
-                _jancyLogger.LogInfo(await GetResponseLogging(response, copyResponseBodyStream, originalResponseBodyStream), "Response", response.HttpContext.TraceIdentifier);
-            };
+            _jancyLogger.LogInfo(await GetResponseLogging(httpResponse, copyResponseBodyStream, originalResponseBodyStream), "Response", httpResponse.HttpContext.TraceIdentifier);
         }
 
         private async Task<string> GetRequestLogging(HttpRequest request)

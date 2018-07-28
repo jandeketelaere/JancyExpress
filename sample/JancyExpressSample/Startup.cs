@@ -1,5 +1,6 @@
 ﻿using JancyExpress;
 using JancyExpress.Extensions;
+using JancyExpressSample.Decorators;
 using JancyExpressSample.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -41,8 +42,8 @@ namespace JancyExpressSample
             var assembly = Assembly.GetAssembly(typeof(Startup));
 
             RegisterLogging(services);
-            RegisterRequestHandlers(services, assembly);
-            RegisterMiddleware(services, assembly);
+            RegisterHandlers(services, assembly);
+            RegisterDecorators(services, assembly);
         }
 
         private static void RegisterLogging(IServiceCollection services)
@@ -51,19 +52,22 @@ namespace JancyExpressSample
             services.AddSingleton<IJancyLogger, JancyLogger>();
         }
 
-        private static void RegisterRequestHandlers(IServiceCollection services, Assembly assembly)
+        private static void RegisterDecorators(IServiceCollection services, Assembly assembly)
+        {
+            services.AddScoped(typeof(ExceptionDecorator<,>));
+            services.AddScoped(typeof(RequestResponseLoggingDecorator<,>));
+        }
+
+        private static void RegisterHandlers(IServiceCollection services, Assembly assembly)
         {
             services.Scan(scan => scan.FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo(typeof(IRequestHandler)))
+                .AddClasses(classes => classes.AssignableTo(typeof(IHttpHandler<,>)))
                 .AsSelf()
                 .WithScopedLifetime()
             );
-        }
 
-        private static void RegisterMiddleware(IServiceCollection services, Assembly assembly)
-        {
             services.Scan(scan => scan.FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo(typeof(IRequestHandlerMiddleware)))
+                .AddClasses(classes => classes.AssignableTo(typeof(IApiHandler<,>)))
                 .AsSelf()
                 .WithScopedLifetime()
             );
@@ -72,16 +76,13 @@ namespace JancyExpressSample
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder applicationBuilder, IHostingEnvironment env, IServiceProvider serviceProvider)
         {
-            applicationBuilder.UseJancyExpress(app =>
+            applicationBuilder.UseJancyExpress(serviceProvider, app =>
             {
-                app.Use(
-                    serviceProvider.GetService<Middleware.ExceptionMiddleware>().Handle(),
-                    serviceProvider.GetService<Middleware.RequestResponseLoggingMiddleware>().Handle());
-
-                app.Get("api/apple/simpleget/{name}",
-                    serviceProvider.GetService<Features.Apple.SimpleGet.Validator>().Handle(),
-                    serviceProvider.GetService<Features.Apple.SimpleGet.Handler>().Handle()
-                );
+                app.Get("api/apple/simpleget/{name}")
+                .WithHttpHandlerDecorator(typeof(ExceptionDecorator<,>))
+                .WithHttpHandlerDecorator(typeof(RequestResponseLoggingDecorator<,>))
+                .WithHttpHandler<Features.Apple.SimpleGet.HttpHandler>()
+                .WithApiHandler<Features.Apple.SimpleGet.ApiHandler>();
             });
         }
     }
