@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Routing;
 using System.IO;
 using JancyExpressSample.Infrastructure;
 
-namespace JancyExpressSample.Decorators
+namespace JancyExpressSample.Decorators.HttpHandler
 {
     public class RequestResponseLoggingDecorator<TRequest, TResponse> : IHttpHandlerDecorator<TRequest, TResponse>
     {
@@ -16,7 +16,7 @@ namespace JancyExpressSample.Decorators
             _jancyLogger = jancyLogger;
         }
 
-        public async Task Handle(HttpRequest httpRequest, HttpResponse httpResponse, RouteData routeData, IApiHandler<TRequest, TResponse> apiHandler, HttpHandlerDelegate<Task> next)
+        public async Task Handle(HttpRequest httpRequest, HttpResponse httpResponse, RouteData routeData, HttpHandlerDelegate next)
         {
             _jancyLogger.LogInfo(await GetRequestLogging(httpRequest), "Request", httpRequest.HttpContext.TraceIdentifier);
             

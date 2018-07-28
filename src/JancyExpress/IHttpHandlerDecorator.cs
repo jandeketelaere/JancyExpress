@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 
 namespace JancyExpress
 {
-    public delegate Task HttpHandlerDelegate<Task>();
+    public delegate Task HttpHandlerDelegate();
 
     public interface IHttpHandlerDecorator<TRequest, TResponse>
     {
-        Task Handle(HttpRequest httpRequest, HttpResponse httpResponse, RouteData routeData, IApiHandler<TRequest, TResponse> apiHandler, HttpHandlerDelegate<Task> next);
+        Task Handle(HttpRequest httpRequest, HttpResponse httpResponse, RouteData routeData, HttpHandlerDelegate next);
     }
 }

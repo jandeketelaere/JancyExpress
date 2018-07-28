@@ -8,11 +8,11 @@ namespace JancyExpressSample.Features.Apple.SimpleGet
 {
     public class HttpHandler : IHttpHandler<Request, Response>
     {
-        public async Task Handle(HttpRequest request, HttpResponse response, RouteData routeData, IApiHandler<Request, Response> apiHandler)
+        public async Task Handle(HttpRequest request, HttpResponse response, RouteData routeData, ApiHandlerDelegate<Request, Response> apiHandle)
         {
             var name = routeData.As<string>("name");
 
-            var result = await apiHandler.Handle(new Request
+            var result = await apiHandle(new Request
             {
                 Name = name
             });

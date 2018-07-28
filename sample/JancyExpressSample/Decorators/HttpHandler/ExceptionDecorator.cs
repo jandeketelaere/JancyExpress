@@ -7,7 +7,7 @@ using System.Net;
 using JancyExpress;
 using JancyExpressSample.Infrastructure;
 
-namespace JancyExpressSample.Decorators
+namespace JancyExpressSample.Decorators.HttpHandler
 {
     public class ExceptionDecorator<TRequest, TResponse> : IHttpHandlerDecorator<TRequest, TResponse>
     {
@@ -18,7 +18,7 @@ namespace JancyExpressSample.Decorators
             _logger = logger;
         }
 
-        public async Task Handle(HttpRequest request, HttpResponse response, RouteData routeData, IApiHandler<TRequest, TResponse> apiHandler, HttpHandlerDelegate<Task> next)
+        public async Task Handle(HttpRequest request, HttpResponse response, RouteData routeData, HttpHandlerDelegate next)
         {
             try
             {

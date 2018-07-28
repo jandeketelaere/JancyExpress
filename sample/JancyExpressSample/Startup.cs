@@ -1,6 +1,7 @@
 ﻿using JancyExpress;
 using JancyExpress.Extensions;
-using JancyExpressSample.Decorators;
+using JancyExpressSample.Decorators.ApiHandler;
+using JancyExpressSample.Decorators.HttpHandler;
 using JancyExpressSample.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -54,8 +55,17 @@ namespace JancyExpressSample
 
         private static void RegisterDecorators(IServiceCollection services, Assembly assembly)
         {
-            services.AddScoped(typeof(ExceptionDecorator<,>));
-            services.AddScoped(typeof(RequestResponseLoggingDecorator<,>));
+            services.Scan(scan => scan.FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo(typeof(IHttpHandlerDecorator<,>)))
+                .AsSelf()
+                .WithScopedLifetime()
+            );
+
+            services.Scan(scan => scan.FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo(typeof(IApiHandlerDecorator<,>)))
+                .AsSelf()
+                .WithScopedLifetime()
+            );
         }
 
         private static void RegisterHandlers(IServiceCollection services, Assembly assembly)
@@ -82,6 +92,7 @@ namespace JancyExpressSample
                 .WithHttpHandlerDecorator(typeof(ExceptionDecorator<,>))
                 .WithHttpHandlerDecorator(typeof(RequestResponseLoggingDecorator<,>))
                 .WithHttpHandler<Features.Apple.SimpleGet.HttpHandler>()
+                .WithApiHandlerDecorator(typeof(ValidatorDecorator<,>))
                 .WithApiHandler<Features.Apple.SimpleGet.ApiHandler>();
             });
         }

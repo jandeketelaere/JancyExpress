@@ -11,15 +11,11 @@ namespace JancyExpress
     {
         private List<JancyExpressConfiguration> _configurations;
         private readonly IServiceProvider _serviceProvider;
-
-        //private readonly List<Func<HttpRequest, HttpResponse, RouteData, Func<Task>, Task>> _globalMiddleware;
-
+        
         public JancyExpressApp(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
             _configurations = new List<JancyExpressConfiguration>();
-            
-            //_globalMiddleware = new List<Func<HttpRequest, HttpResponse, RouteData, Func<Task>, Task>>();
         }
 
         public JancyExpressConfiguration Get(string template)
@@ -78,47 +74,5 @@ namespace JancyExpress
 
             return (types[0], types[1]);
         }
-
-        //private void Get(string template, List<Func<HttpRequest, HttpResponse, RouteData, Func<Task>, Task>> middleware, Func<HttpRequest, HttpResponse, RouteData, Task> handler)
-        //{
-        //    var delegateHandler = handler;
-        //    var extendedMiddleware = middleware.Concat(_globalMiddleware);
-
-        //    foreach (var mw in extendedMiddleware)
-        //    {
-        //        var next = delegateHandler;
-        //        delegateHandler = (request, response, routeData) => mw(request, response, routeData, () => next(request, response, routeData));
-        //    }
-
-        //    Routes.Add(new Route
-        //    {
-        //        Verb = "GET",
-        //        Template = template,
-        //        Handler = delegateHandler
-        //    });
-        //}
-
-        //public void Get(string template, Func<HttpRequest, HttpResponse, RouteData, Task> handler)
-        //{
-        //    Get(template, new List<Func<HttpRequest, HttpResponse, RouteData, Func<Task>, Task>>(), handler);
-        //}
-
-        //public void Get(string template, Func<HttpRequest, HttpResponse, RouteData, Func<Task>, Task> middleware1, Func<HttpRequest, HttpResponse, RouteData, Task> handler)
-        //{
-        //    Get(template, new List<Func<HttpRequest, HttpResponse, RouteData, Func<Task>, Task>> { middleware1 }, handler);
-        //}
-
-        //public void Get(string template, Func<HttpRequest, HttpResponse, RouteData, Func<Task>, Task> middleware1, Func<HttpRequest, HttpResponse, RouteData, Func<Task>, Task> middleware2, Func<HttpRequest, HttpResponse, RouteData, Task> handler)
-        //{
-        //    Get(template, new List<Func<HttpRequest, HttpResponse, RouteData, Func<Task>, Task>> { middleware2, middleware1 }, handler);
-        //}
-
-        //public void Use(params Func<HttpRequest, HttpResponse, RouteData, Func<Task>, Task>[] middleware)
-        //{
-        //    foreach(var mw in middleware.Select((m, i) => new { Index = i, Middleware = m}).OrderByDescending(m => m.Index))
-        //    {
-        //        _globalMiddleware.Add(mw.Middleware);
-        //    }
-        //}
     }
 }
