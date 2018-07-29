@@ -42,17 +42,17 @@ namespace JancyExpress
             if (configuration.HttpHandlerType == null)
                 throw new Exception($"{errorMessage} No HttpHandler configured");
 
-            if (configuration.ApiHandlerType == null)
-                throw new Exception($"{errorMessage} No ApiHandler configured");
+            if (configuration.ApiHandlerType != null)
+            {
+                var (HttpHandlerRequestType, HttpHandlerResponseType) = GetRequestResponseType(configuration.HttpHandlerType, typeof(IHttpHandler<,>));
+                var (ApiHandlerRequestType, ApiHandlerResponseType) = GetRequestResponseType(configuration.ApiHandlerType, typeof(IApiHandler<,>));
 
-            var (HttpHandlerRequestType, HttpHandlerResponseType) = GetRequestResponseType(configuration.HttpHandlerType, typeof(IHttpHandler<,>));
-            var (ApiHandlerRequestType, ApiHandlerResponseType) = GetRequestResponseType(configuration.ApiHandlerType, typeof(IApiHandler<,>));
+                if (HttpHandlerRequestType != ApiHandlerRequestType)
+                    throw new Exception($"{errorMessage} HttpHandler request '{HttpHandlerRequestType}' is not the same as ApiHandler request '{ApiHandlerRequestType}'");
 
-            if (HttpHandlerRequestType != ApiHandlerRequestType)
-                throw new Exception($"{errorMessage} HttpHandler request '{HttpHandlerRequestType}' is not the same as ApiHandler request '{ApiHandlerRequestType}'");
-
-            if (HttpHandlerResponseType != ApiHandlerResponseType)
-                throw new Exception($"{errorMessage} HttpHandler response '{HttpHandlerResponseType}' is not the same as ApiHandler response '{ApiHandlerResponseType}'");
+                if (HttpHandlerResponseType != ApiHandlerResponseType)
+                    throw new Exception($"{errorMessage} HttpHandler response '{HttpHandlerResponseType}' is not the same as ApiHandler response '{ApiHandlerResponseType}'");
+            }
         }
 
         private JancyExpressRoute GenerateRoute(JancyExpressConfiguration configuration)

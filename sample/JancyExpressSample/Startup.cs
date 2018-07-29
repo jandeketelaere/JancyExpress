@@ -91,8 +91,10 @@ namespace JancyExpressSample
                 app.Get("api/apple/simpleget/{name}")
                 .WithHttpHandlerDecorator(typeof(ExceptionDecorator<,>))
                 .WithHttpHandlerDecorator(typeof(RequestResponseLoggingDecorator<,>))
+                .WithHttpHandlerDecorator<Features.Apple.SimpleGet.HttpSecurity>()
                 .WithHttpHandler<Features.Apple.SimpleGet.HttpHandler>()
-                .WithApiHandlerDecorator(typeof(ValidatorDecorator<,>))
+                .WithApiHandlerDecorator(typeof(TransactionDecorator<,>))
+                .WithApiHandlerDecorator<Features.Apple.SimpleGet.Validator>()
                 .WithApiHandler<Features.Apple.SimpleGet.ApiHandler>();
             });
         }

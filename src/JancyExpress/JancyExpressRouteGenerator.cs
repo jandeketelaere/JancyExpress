@@ -13,6 +13,8 @@ namespace JancyExpress
     }
 
     internal class JancyExpressRouteGenerator<TRequest, TResponse> : IJancyExpressRouteGenerator
+        where TRequest : class
+        where TResponse : class
     {
         public JancyExpressRoute GenerateRoute(JancyExpressConfiguration configuration, IServiceProvider serviceProvider)
         {
@@ -37,6 +39,9 @@ namespace JancyExpress
 
         private ApiHandlerDelegate<TRequest, TResponse> GetApiHandler(JancyExpressConfiguration configuration, IServiceProvider serviceProvider)
         {
+            if (configuration.ApiHandlerType == null)
+                return (request) => Task.FromResult<TResponse>(null);
+
             ApiHandlerDelegate<TRequest, TResponse> apiHandler = (request) =>
             {
                 var handler = (IApiHandler<TRequest, TResponse>)serviceProvider.GetService(configuration.ApiHandlerType);
@@ -75,10 +80,10 @@ namespace JancyExpress
 
         private IEnumerable<IHttpHandlerDecorator<TRequest, TResponse>> GetHttpHandlerDecorators(JancyExpressConfiguration configuration, IServiceProvider serviceProvider)
         {
-            var types = configuration.HttpHandlerDecoratorTypes.Select(t => t.MakeGenericType(typeof(TRequest), typeof(TResponse))).Reverse();
-            
-            foreach (var type in types)
+            foreach (var decoratorType in Enumerable.Reverse(configuration.HttpHandlerDecoratorTypes))
             {
+                var type = decoratorType.IsGenericType ? decoratorType.MakeGenericType(typeof(TRequest), typeof(TResponse)) : decoratorType;
+
                 //todo: validation
                 if (serviceProvider.GetService(type) is IHttpHandlerDecorator<TRequest, TResponse> obj)
                     yield return obj;
@@ -87,10 +92,10 @@ namespace JancyExpress
 
         private IEnumerable<IApiHandlerDecorator<TRequest, TResponse>> GetApiHandlerDecorators(JancyExpressConfiguration configuration, IServiceProvider serviceProvider)
         {
-            var types = configuration.ApiHandlerDecoratorTypes.Select(t => t.MakeGenericType(typeof(TRequest), typeof(TResponse))).Reverse();
-
-            foreach (var type in types)
+            foreach(var decoratorType in Enumerable.Reverse(configuration.ApiHandlerDecoratorTypes))
             {
+                var type = decoratorType.IsGenericType ? decoratorType.MakeGenericType(typeof(TRequest), typeof(TResponse)) : decoratorType;
+
                 //todo: validation
                 if (serviceProvider.GetService(type) is IApiHandlerDecorator<TRequest, TResponse> obj)
                     yield return obj;

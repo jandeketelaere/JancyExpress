@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace JancyExpress
 {
+    //todo: check if types are of correct type => e.g. IApiHandlerDecorator
     public class JancyExpressConfiguration
     {
         internal string Verb { get; }
@@ -27,21 +28,33 @@ namespace JancyExpress
             return this;
         }
 
+        public JancyExpressConfiguration WithHttpHandlerDecorator<THttpHandlerDecorator>()
+        {
+            HttpHandlerDecoratorTypes.Add(typeof(THttpHandlerDecorator));
+            return this;
+        }
+
         public JancyExpressConfiguration WithApiHandlerDecorator(Type type)
         {
             ApiHandlerDecoratorTypes.Add(type);
             return this;
         }
 
-        public JancyExpressConfiguration WithHttpHandler<IHttpHandler>()
+        public JancyExpressConfiguration WithApiHandlerDecorator<TApiHandlerDecorator>()
         {
-            HttpHandlerType = typeof(IHttpHandler);
+            ApiHandlerDecoratorTypes.Add(typeof(TApiHandlerDecorator));
             return this;
         }
 
-        public JancyExpressConfiguration WithApiHandler<IApiHandler>()
+        public JancyExpressConfiguration WithHttpHandler<THttpHandler>()
         {
-            ApiHandlerType = typeof(IApiHandler);
+            HttpHandlerType = typeof(THttpHandler);
+            return this;
+        }
+
+        public JancyExpressConfiguration WithApiHandler<TApiHandler>()
+        {
+            ApiHandlerType = typeof(TApiHandler);
             return this;
         }
     }
