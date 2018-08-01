@@ -4,39 +4,54 @@ using System.Linq;
 
 namespace JancyExpress
 {
-    //todo: Split JancyExpressConfiguration into API & actual configuration => extension methods for API?
+    //todo: reevalute configuration api / configuration
     //todo: use delegate instead of injecting IServiceProvider
 
     public class JancyExpressApp
     {
+        private JancyExpressGlobalConfiguration _globalConfiguration;
         private List<JancyExpressConfiguration> _configurations;
         private readonly IServiceProvider _serviceProvider;
         
         public JancyExpressApp(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
+            _globalConfiguration = new JancyExpressGlobalConfiguration();
             _configurations = new List<JancyExpressConfiguration>();
         }
 
-        public JancyExpressConfiguration Get(string template)
+        public JancyExpressGlobalConfigurationApi Use()
         {
-            var configuration = new JancyExpressConfiguration("GET", template);
-            _configurations.Add(configuration);
+            var globalConfigurationApi = new JancyExpressGlobalConfigurationApi();
+            _globalConfiguration = globalConfigurationApi.Configuration;
 
-            return configuration;
+            return globalConfigurationApi;
+        }
+
+        public JancyExpressConfigurationApi Get(string template)
+        {
+            var configurationApi = new JancyExpressConfigurationApi("GET", template);
+            _configurations.Add(configurationApi.Configuration);
+
+            return configurationApi;
         }
 
         internal IEnumerable<JancyExpressRoute> GenerateRoutes()
         {
+            //todo: validate global configuration
+
             foreach(var configuration in _configurations)
             {
                 ValidateConfiguration(configuration);
-                yield return GenerateRoute(configuration);
+                yield return GenerateRoute(configuration, _globalConfiguration);
             }
         }
 
         private void ValidateConfiguration(JancyExpressConfiguration configuration)
         {
+            //todo: move validation to different class
+            //todo: check if types are of correct type => e.g. IApiHandlerDecorator
+
             var errorMessage = $"Configuration for {configuration.Verb} {configuration.Template} failed with the following error:";
 
             if (configuration.HttpHandlerType == null)
@@ -55,14 +70,14 @@ namespace JancyExpress
             }
         }
 
-        private JancyExpressRoute GenerateRoute(JancyExpressConfiguration configuration)
+        private JancyExpressRoute GenerateRoute(JancyExpressConfiguration configuration, JancyExpressGlobalConfiguration globalConfiguration)
         {
             var (RequestType, ResponseType) = GetRequestResponseType(configuration.HttpHandlerType, typeof(IHttpHandler<,>));
 
             var routeGeneratorType = typeof(JancyExpressRouteGenerator<,>).MakeGenericType(RequestType, ResponseType);
             var routeGenerator = (IJancyExpressRouteGenerator) Activator.CreateInstance(routeGeneratorType);
 
-            return routeGenerator.GenerateRoute(configuration, _serviceProvider);
+            return routeGenerator.GenerateRoute(configuration, globalConfiguration, _serviceProvider);
         }
 
         private (Type RequestType, Type ResponseType) GetRequestResponseType(Type type, Type genericType)
