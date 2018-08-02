@@ -11,24 +11,40 @@ namespace JancyExpress
             Configuration = new JancyExpressGlobalConfiguration();
         }
 
+        /// <summary>
+        /// Registers HTTP handler decorator with interface IHttpHandlerDecorator&lt;TRequest, TResponse&gt;.
+        /// Use this to register open generic types.
+        /// </summary>
+        /// <param name="type">The type to register.</param>
         public JancyExpressGlobalConfigurationApi WithHttpHandlerDecorator(Type type)
         {
             Configuration.HttpHandlerDecoratorTypes.Add(type);
             return this;
         }
 
+        /// <summary>
+        /// Registers HTTP handler decorator with interface IHttpHandlerDecorator&lt;TRequest, TResponse&gt;.
+        /// </summary>
         public JancyExpressGlobalConfigurationApi WithHttpHandlerDecorator<THttpHandlerDecorator>()
         {
             Configuration.HttpHandlerDecoratorTypes.Add(typeof(THttpHandlerDecorator));
             return this;
         }
 
+        /// <summary>
+        /// Registers API handler decorator with interface IApiHandlerDecorator&lt;TRequest, TResponse&gt;.
+        /// Use this to register open generic types.
+        /// </summary>
+        /// <param name="type">The type to register.</param>
         public JancyExpressGlobalConfigurationApi WithApiHandlerDecorator(Type type)
         {
             Configuration.ApiHandlerDecoratorTypes.Add(type);
             return this;
         }
 
+        /// <summary>
+        /// Registers API handler decorator with interface IApiHandlerDecorator&lt;TRequest, TResponse&gt;.
+        /// </summary>
         public JancyExpressGlobalConfigurationApi WithApiHandlerDecorator<TApiHandlerDecorator>()
         {
             Configuration.ApiHandlerDecoratorTypes.Add(typeof(TApiHandlerDecorator));
