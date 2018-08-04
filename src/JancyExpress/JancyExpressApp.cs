@@ -20,6 +20,9 @@ namespace JancyExpress
             _configurations = new List<JancyExpressConfiguration>();
         }
 
+        /// <summary>
+        /// Configures handlers and decorators on a global level.
+        /// </summary>
         public JancyExpressGlobalConfigurationApi Use()
         {
             var globalConfigurationApi = new JancyExpressGlobalConfigurationApi();
@@ -28,6 +31,10 @@ namespace JancyExpress
             return globalConfigurationApi;
         }
 
+        /// <summary>
+        /// Registers routing for a GET request
+        /// </summary>
+        /// <param name="template">The template of the request.</param>
         public JancyExpressConfigurationApi Get(string template)
         {
             var configurationApi = new JancyExpressConfigurationApi("GET", template);

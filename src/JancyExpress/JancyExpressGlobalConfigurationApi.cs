@@ -12,7 +12,7 @@ namespace JancyExpress
         }
 
         /// <summary>
-        /// Registers HTTP handler decorator with interface IHttpHandlerDecorator&lt;TRequest, TResponse&gt;.
+        /// Registers an HTTP handler decorator with interface IHttpHandlerDecorator&lt;TRequest, TResponse&gt;.
         /// Use this to register open generic types.
         /// </summary>
         /// <param name="type">The type to register.</param>
@@ -23,7 +23,7 @@ namespace JancyExpress
         }
 
         /// <summary>
-        /// Registers HTTP handler decorator with interface IHttpHandlerDecorator&lt;TRequest, TResponse&gt;.
+        /// Registers an HTTP handler decorator with interface IHttpHandlerDecorator&lt;TRequest, TResponse&gt;.
         /// </summary>
         public JancyExpressGlobalConfigurationApi WithHttpHandlerDecorator<THttpHandlerDecorator>()
         {
@@ -32,7 +32,7 @@ namespace JancyExpress
         }
 
         /// <summary>
-        /// Registers API handler decorator with interface IApiHandlerDecorator&lt;TRequest, TResponse&gt;.
+        /// Registers an API handler decorator with interface IApiHandlerDecorator&lt;TRequest, TResponse&gt;.
         /// Use this to register open generic types.
         /// </summary>
         /// <param name="type">The type to register.</param>
@@ -43,7 +43,7 @@ namespace JancyExpress
         }
 
         /// <summary>
-        /// Registers API handler decorator with interface IApiHandlerDecorator&lt;TRequest, TResponse&gt;.
+        /// Registers an API handler decorator with interface IApiHandlerDecorator&lt;TRequest, TResponse&gt;.
         /// </summary>
         public JancyExpressGlobalConfigurationApi WithApiHandlerDecorator<TApiHandlerDecorator>()
         {
