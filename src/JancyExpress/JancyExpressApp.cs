@@ -43,6 +43,18 @@ namespace JancyExpress
             return configurationApi;
         }
 
+        /// <summary>
+        /// Registers routing for a POST request
+        /// </summary>
+        /// <param name="template">The template of the request.</param>
+        public JancyExpressConfigurationApi Post(string template)
+        {
+            var configurationApi = new JancyExpressConfigurationApi("POST", template);
+            _configurations.Add(configurationApi.Configuration);
+
+            return configurationApi;
+        }
+
         internal IEnumerable<JancyExpressRoute> GenerateRoutes()
         {
             //todo: validate global configuration

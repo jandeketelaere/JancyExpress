@@ -13,8 +13,6 @@ namespace JancyExpress
     }
 
     internal class JancyExpressRouteGenerator<TRequest, TResponse> : IJancyExpressRouteGenerator
-        where TRequest : class
-        where TResponse : class
     {
         public JancyExpressRoute GenerateRoute(JancyExpressConfiguration configuration, JancyExpressGlobalConfiguration globalConfiguration, IServiceProvider serviceProvider)
         {
@@ -40,7 +38,7 @@ namespace JancyExpress
         private ApiHandlerDelegate<TRequest, TResponse> GetApiHandler(JancyExpressConfiguration configuration, JancyExpressGlobalConfiguration globalConfiguration, IServiceProvider serviceProvider)
         {
             if (configuration.ApiHandlerType == null)
-                return (request) => Task.FromResult<TResponse>(null);
+                return (request) => throw new NotImplementedException($"Could not execute ApiHandlerDelegate because no API handler was registered for request '{typeof(TRequest)}' and response '{typeof(TResponse)}'");
 
             ApiHandlerDelegate<TRequest, TResponse> apiHandler = (request) =>
             {

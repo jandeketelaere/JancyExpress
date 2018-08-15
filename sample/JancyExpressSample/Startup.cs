@@ -89,15 +89,19 @@ namespace JancyExpressSample
             applicationBuilder.UseJancyExpress(serviceProvider, app =>
             {
                 app.Use()
-                .WithHttpHandlerDecorator(typeof(ExceptionDecorator<,>))
-                .WithHttpHandlerDecorator(typeof(RequestResponseLoggingDecorator<,>))
-                .WithApiHandlerDecorator(typeof(TransactionDecorator<,>));
+                    .WithHttpHandlerDecorator(typeof(ExceptionDecorator<,>))
+                    .WithHttpHandlerDecorator(typeof(RequestResponseLoggingDecorator<,>))
+                    .WithApiHandlerDecorator(typeof(TransactionDecorator<,>));
 
                 app.Get("api/apple/simpleget/{name}")
-                .WithHttpHandlerDecorator<Features.Apple.SimpleGet.HttpSecurity>()
-                .WithHttpHandler<Features.Apple.SimpleGet.HttpHandler>()
-                .WithApiHandlerDecorator<Features.Apple.SimpleGet.Validator>()
-                .WithApiHandler<Features.Apple.SimpleGet.ApiHandler>();
+                    .WithHttpHandlerDecorator<Features.Apple.SimpleGet.HttpSecurity>()
+                    .WithHttpHandler<Features.Apple.SimpleGet.HttpHandler>()
+                    .WithApiHandlerDecorator<Features.Apple.SimpleGet.Validator>()
+                    .WithApiHandler<Features.Apple.SimpleGet.ApiHandler>();
+
+                app.Post("api/apple/simplepost")
+                    .WithHttpHandler<Features.Apple.SimplePost.HttpHandler>();
+                    //.WithApiHandler<Features.Apple.SimplePost.ApiHandler>();
             });
         }
     }
