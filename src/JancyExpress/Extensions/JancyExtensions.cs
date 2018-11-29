@@ -12,10 +12,10 @@ namespace JancyExpress.Extensions
             return services.AddRouting();
         }
 
-        public static IApplicationBuilder UseJancyExpress(this IApplicationBuilder applicationBuilder, IServiceProvider serviceProvider, Action<JancyExpressApp> action)
+        public static IApplicationBuilder UseJancyExpress(this IApplicationBuilder applicationBuilder, ServiceFactory serviceFactory, Action<JancyExpressApp> action)
         {
             var routeBuilder = new RouteBuilder(applicationBuilder);
-            var app = new JancyExpressApp(serviceProvider);
+            var app = new JancyExpressApp(serviceFactory);
 
             action(app);
 

@@ -11,11 +11,11 @@ namespace JancyExpress
     {
         private JancyExpressGlobalConfiguration _globalConfiguration;
         private List<JancyExpressConfiguration> _configurations;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly ServiceFactory _serviceFactory;
         
-        public JancyExpressApp(IServiceProvider serviceProvider)
+        public JancyExpressApp(ServiceFactory serviceFactory)
         {
-            _serviceProvider = serviceProvider;
+            _serviceFactory = serviceFactory;
             _globalConfiguration = new JancyExpressGlobalConfiguration();
             _configurations = new List<JancyExpressConfiguration>();
         }
@@ -96,7 +96,7 @@ namespace JancyExpress
             var routeGeneratorType = typeof(JancyExpressRouteGenerator<,>).MakeGenericType(RequestType, ResponseType);
             var routeGenerator = (IJancyExpressRouteGenerator) Activator.CreateInstance(routeGeneratorType);
 
-            return routeGenerator.GenerateRoute(configuration, globalConfiguration, _serviceProvider);
+            return routeGenerator.GenerateRoute(configuration, globalConfiguration, _serviceFactory);
         }
 
         private (Type RequestType, Type ResponseType) GetRequestResponseType(Type type, Type genericType)

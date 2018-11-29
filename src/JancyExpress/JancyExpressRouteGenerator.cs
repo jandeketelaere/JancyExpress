@@ -9,45 +9,45 @@ namespace JancyExpress
 {
     internal interface IJancyExpressRouteGenerator
     {
-        JancyExpressRoute GenerateRoute(JancyExpressConfiguration configuration, JancyExpressGlobalConfiguration globalConfiguration, IServiceProvider serviceProvider);
+        JancyExpressRoute GenerateRoute(JancyExpressConfiguration configuration, JancyExpressGlobalConfiguration globalConfiguration, ServiceFactory serviceFactory);
     }
 
     internal class JancyExpressRouteGenerator<TRequest, TResponse> : IJancyExpressRouteGenerator
     {
-        public JancyExpressRoute GenerateRoute(JancyExpressConfiguration configuration, JancyExpressGlobalConfiguration globalConfiguration, IServiceProvider serviceProvider)
+        public JancyExpressRoute GenerateRoute(JancyExpressConfiguration configuration, JancyExpressGlobalConfiguration globalConfiguration, ServiceFactory serviceFactory)
         {
             return new JancyExpressRoute
             {
                 Verb = configuration.Verb,
                 Template = configuration.Template,
-                Handler = GetHandlerFunc(configuration, globalConfiguration, serviceProvider)
+                Handler = GetHandlerFunc(configuration, globalConfiguration, serviceFactory)
             };
         }
 
-        private Func<HttpRequest, HttpResponse, RouteData, Task> GetHandlerFunc(JancyExpressConfiguration configuration, JancyExpressGlobalConfiguration globalConfiguration, IServiceProvider serviceProvider)
+        private Func<HttpRequest, HttpResponse, RouteData, Task> GetHandlerFunc(JancyExpressConfiguration configuration, JancyExpressGlobalConfiguration globalConfiguration, ServiceFactory serviceFactory)
         {
             return (request, response, routeData) =>
             {
-                var apiHandler = GetApiHandler(configuration, globalConfiguration, serviceProvider);
-                var httpHandler = GetHttpHandler(configuration, globalConfiguration, serviceProvider, request, response, routeData, apiHandler);
+                var apiHandler = GetApiHandler(configuration, globalConfiguration, serviceFactory);
+                var httpHandler = GetHttpHandler(configuration, globalConfiguration, serviceFactory, request, response, routeData, apiHandler);
 
                 return httpHandler();
             };
         }
 
-        private ApiHandlerDelegate<TRequest, TResponse> GetApiHandler(JancyExpressConfiguration configuration, JancyExpressGlobalConfiguration globalConfiguration, IServiceProvider serviceProvider)
+        private ApiHandlerDelegate<TRequest, TResponse> GetApiHandler(JancyExpressConfiguration configuration, JancyExpressGlobalConfiguration globalConfiguration, ServiceFactory serviceFactory)
         {
             if (configuration.ApiHandlerType == null)
                 return (request) => throw new NotImplementedException($"Could not execute ApiHandlerDelegate because no API handler was registered for request '{typeof(TRequest)}' and response '{typeof(TResponse)}'");
 
             ApiHandlerDelegate<TRequest, TResponse> apiHandler = (request) =>
             {
-                var handler = (IApiHandler<TRequest, TResponse>)serviceProvider.GetService(configuration.ApiHandlerType);
+                var handler = serviceFactory.GetInstance<IApiHandler<TRequest, TResponse>>(configuration.ApiHandlerType);
                 return handler.Handle(request);
             };
 
-            var apiHandlerDecorators = GetApiHandlerDecorators(configuration, serviceProvider)
-                .Concat(GetGlobalApiHandlerDecorators(globalConfiguration, serviceProvider));
+            var apiHandlerDecorators = GetApiHandlerDecorators(configuration, serviceFactory)
+                .Concat(GetGlobalApiHandlerDecorators(globalConfiguration, serviceFactory));
 
             foreach (var decorator in apiHandlerDecorators)
             {
@@ -58,16 +58,16 @@ namespace JancyExpress
             return apiHandler;
         }
 
-        private HttpHandlerDelegate GetHttpHandler(JancyExpressConfiguration configuration, JancyExpressGlobalConfiguration globalConfiguration, IServiceProvider serviceProvider, HttpRequest request, HttpResponse response, RouteData routeData, ApiHandlerDelegate<TRequest, TResponse> apiHandler)
+        private HttpHandlerDelegate GetHttpHandler(JancyExpressConfiguration configuration, JancyExpressGlobalConfiguration globalConfiguration, ServiceFactory serviceFactory, HttpRequest request, HttpResponse response, RouteData routeData, ApiHandlerDelegate<TRequest, TResponse> apiHandler)
         {
             HttpHandlerDelegate httpHandler = () =>
             {
-                var handler = (IHttpHandler<TRequest, TResponse>)serviceProvider.GetService(configuration.HttpHandlerType);
+                var handler = serviceFactory.GetInstance<IHttpHandler<TRequest, TResponse>>(configuration.HttpHandlerType);
                 return handler.Handle(request, response, routeData, (req) => apiHandler(req));
             };
 
-            var httpHandlerDecorators = GetHttpHandlerDecorators(configuration, serviceProvider)
-                .Concat(GetGlobalHttpHandlerDecorators(globalConfiguration, serviceProvider));
+            var httpHandlerDecorators = GetHttpHandlerDecorators(configuration, serviceFactory)
+                .Concat(GetGlobalHttpHandlerDecorators(globalConfiguration, serviceFactory));
 
             foreach (var decorator in httpHandlerDecorators)
             {
@@ -78,50 +78,50 @@ namespace JancyExpress
             return httpHandler;
         }
 
-        private IEnumerable<IHttpHandlerDecorator<TRequest, TResponse>> GetGlobalHttpHandlerDecorators(JancyExpressGlobalConfiguration globalConfiguration, IServiceProvider serviceProvider)
+        private IEnumerable<IHttpHandlerDecorator<TRequest, TResponse>> GetGlobalHttpHandlerDecorators(JancyExpressGlobalConfiguration globalConfiguration, ServiceFactory serviceFactory)
         {
             foreach (var decoratorType in Enumerable.Reverse(globalConfiguration.HttpHandlerDecoratorTypes))
             {
                 var type = decoratorType.IsGenericType ? decoratorType.MakeGenericType(typeof(TRequest), typeof(TResponse)) : decoratorType;
 
                 //todo: validation
-                if (serviceProvider.GetService(type) is IHttpHandlerDecorator<TRequest, TResponse> obj)
+                if (serviceFactory.GetInstance(type) is IHttpHandlerDecorator<TRequest, TResponse> obj)
                     yield return obj;
             }
         }
 
-        private IEnumerable<IHttpHandlerDecorator<TRequest, TResponse>> GetHttpHandlerDecorators(JancyExpressConfiguration configuration, IServiceProvider serviceProvider)
+        private IEnumerable<IHttpHandlerDecorator<TRequest, TResponse>> GetHttpHandlerDecorators(JancyExpressConfiguration configuration, ServiceFactory serviceFactory)
         {
             foreach (var decoratorType in Enumerable.Reverse(configuration.HttpHandlerDecoratorTypes))
             {
                 var type = decoratorType.IsGenericType ? decoratorType.MakeGenericType(typeof(TRequest), typeof(TResponse)) : decoratorType;
 
                 //todo: validation
-                if (serviceProvider.GetService(type) is IHttpHandlerDecorator<TRequest, TResponse> obj)
+                if (serviceFactory.GetInstance(type) is IHttpHandlerDecorator<TRequest, TResponse> obj)
                     yield return obj;
             }
         }
 
-        private IEnumerable<IApiHandlerDecorator<TRequest, TResponse>> GetApiHandlerDecorators(JancyExpressConfiguration configuration, IServiceProvider serviceProvider)
+        private IEnumerable<IApiHandlerDecorator<TRequest, TResponse>> GetApiHandlerDecorators(JancyExpressConfiguration configuration, ServiceFactory serviceFactory)
         {
             foreach(var decoratorType in Enumerable.Reverse(configuration.ApiHandlerDecoratorTypes))
             {
                 var type = decoratorType.IsGenericType ? decoratorType.MakeGenericType(typeof(TRequest), typeof(TResponse)) : decoratorType;
 
                 //todo: validation
-                if (serviceProvider.GetService(type) is IApiHandlerDecorator<TRequest, TResponse> obj)
+                if (serviceFactory.GetInstance(type) is IApiHandlerDecorator<TRequest, TResponse> obj)
                     yield return obj;
             }
         }
 
-        private IEnumerable<IApiHandlerDecorator<TRequest, TResponse>> GetGlobalApiHandlerDecorators(JancyExpressGlobalConfiguration configuration, IServiceProvider serviceProvider)
+        private IEnumerable<IApiHandlerDecorator<TRequest, TResponse>> GetGlobalApiHandlerDecorators(JancyExpressGlobalConfiguration configuration, ServiceFactory serviceFactory)
         {
             foreach (var decoratorType in Enumerable.Reverse(configuration.ApiHandlerDecoratorTypes))
             {
                 var type = decoratorType.IsGenericType ? decoratorType.MakeGenericType(typeof(TRequest), typeof(TResponse)) : decoratorType;
 
                 //todo: validation
-                if (serviceProvider.GetService(type) is IApiHandlerDecorator<TRequest, TResponse> obj)
+                if (serviceFactory.GetInstance(type) is IApiHandlerDecorator<TRequest, TResponse> obj)
                     yield return obj;
             }
         }

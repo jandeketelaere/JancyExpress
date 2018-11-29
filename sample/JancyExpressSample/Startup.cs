@@ -45,6 +45,8 @@ namespace JancyExpressSample
             RegisterLogging(services);
             RegisterHandlers(services, assembly);
             RegisterDecorators(services, assembly);
+
+            services.AddScoped<ServiceFactory>(p => p.GetService);
         }
 
         private static void RegisterLogging(IServiceCollection services)
@@ -84,9 +86,9 @@ namespace JancyExpressSample
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder applicationBuilder, IHostingEnvironment env, IServiceProvider serviceProvider)
+        public void Configure(IApplicationBuilder applicationBuilder, IHostingEnvironment env, ServiceFactory serviceFactory)
         {
-            applicationBuilder.UseJancyExpress(serviceProvider, app =>
+            applicationBuilder.UseJancyExpress(serviceFactory, app =>
             {
                 app.Use()
                     .WithHttpHandlerDecorator(typeof(ExceptionDecorator<,>))
