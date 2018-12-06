@@ -20,6 +20,9 @@ namespace JancyExpress.Extensions
             var serviceFactory = serviceProvider.GetService<ServiceFactory>();
             var configuration = serviceFactory.GetInstance<JancyExpressConfiguration>();
 
+            if (configuration.ValidateOnStartup)
+                configuration.Validate();
+
             var routesGenerator = new JancyExpressRoutesGenerator(configuration, serviceFactory);
             
             foreach (var route in routesGenerator.GenerateRoutes())

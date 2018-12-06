@@ -45,7 +45,7 @@ namespace JancyExpressSample
 
             RegisterLogging(services);
             RegisterHandlers(services, assembly);
-            RegisterDecorators(services, assembly);
+            RegisterMiddleware(services, assembly);
             RegisterConfiguration(services);
         }
 
@@ -70,11 +70,10 @@ namespace JancyExpressSample
 
                     app.Post("api/apple/simplepost")
                         .WithHttpHandler<Features.Apple.SimplePost.HttpHandler>();
-                        //.WithApiHandler<Features.Apple.SimplePost.ApiHandler>();
                 });
             });
 
-            services.AddScoped(_ => configuration);
+            services.AddSingleton(configuration);
         }
 
         private static void RegisterLogging(IServiceCollection services)
@@ -83,7 +82,7 @@ namespace JancyExpressSample
             services.AddSingleton<IJancyLogger, JancyLogger>();
         }
 
-        private static void RegisterDecorators(IServiceCollection services, Assembly assembly)
+        private static void RegisterMiddleware(IServiceCollection services, Assembly assembly)
         {
             services.Scan(scan => scan.FromAssemblies(assembly)
                 .AddClasses(classes => classes.AssignableTo(typeof(IHttpHandlerMiddleware<,>)))

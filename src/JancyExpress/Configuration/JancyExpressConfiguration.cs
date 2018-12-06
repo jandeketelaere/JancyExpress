@@ -13,9 +13,6 @@ namespace JancyExpress.Configuration
             ValidateOnStartup = configurationExpression.ValidateOnStartup;
             AppUseConfiguration = new JancyExpressAppUseConfiguration(configurationExpression.AppConfiguration.UseConfiguration.HttpHandlerMiddlewareTypes, configurationExpression.AppConfiguration.UseConfiguration.ApiHandlerMiddlewareTypes);
             AppVerbConfigurationList = GetAppVerbConfigurationList(configurationExpression.AppConfiguration).ToList();
-
-            if (ValidateOnStartup)
-                Validate();
         }
 
         public bool ValidateOnStartup { get; }
@@ -31,6 +28,14 @@ namespace JancyExpress.Configuration
             config(expression);
 
             return expression;
+        }
+
+        private IEnumerable<JancyExpressAppVerbConfiguration> GetAppVerbConfigurationList(JancyExpressAppConfigurationExpression appConfiguration)
+        {
+            foreach (var getConfiguration in appConfiguration.VerbConfigurationList)
+            {
+                yield return new JancyExpressAppVerbConfiguration(getConfiguration.Verb, getConfiguration.Template, getConfiguration.HttpHandlerType, getConfiguration.ApiHandlerType, getConfiguration.HttpHandlerMiddlewareTypes, getConfiguration.ApiHandlerMiddlewareTypes);
+            }
         }
 
         public void Validate()
@@ -55,53 +60,5 @@ namespace JancyExpress.Configuration
             //        throw new Exception($"{errorMessage} HttpHandler response '{HttpHandlerResponseType}' is not the same as ApiHandler response '{ApiHandlerResponseType}'");
             //}
         }
-
-        private IEnumerable<JancyExpressAppVerbConfiguration> GetAppVerbConfigurationList(JancyExpressAppConfigurationExpression appConfiguration)
-        {
-            foreach(var getConfiguration in appConfiguration.VerbConfigurationList)
-            {
-                yield return new JancyExpressAppVerbConfiguration(getConfiguration.Verb, getConfiguration.Template, getConfiguration.HttpHandlerType, getConfiguration.ApiHandlerType, getConfiguration.HttpHandlerMiddlewareTypes, getConfiguration.ApiHandlerMiddlewareTypes);
-            }
-        }
-    }
-
-    public class JancyExpressAppUseConfiguration
-    {
-        public JancyExpressAppUseConfiguration(List<Type> httpHandlerMiddlewareTypes, List<Type> apiHandlerMiddlewareTypes)
-        {
-            HttpHandlerMiddlewareTypes = httpHandlerMiddlewareTypes;
-            ApiHandlerMiddlewareTypes = apiHandlerMiddlewareTypes;
-        }
-
-        public List<Type> HttpHandlerMiddlewareTypes { get; }
-        public List<Type> ApiHandlerMiddlewareTypes { get; }
-    }
-
-    public class JancyExpressAppVerbConfiguration
-    {
-        public JancyExpressAppVerbConfiguration(JancyExpressAppVerb verb, string template, Type httpHandlerType, Type apiHandlerType, List<Type> httpHandlerMiddlewareTypes, List<Type> apiHandlerMiddlewareTypes)
-        {
-            Verb = verb;
-            Template = template;
-            HttpHandlerType = httpHandlerType;
-            ApiHandlerType = apiHandlerType;
-            HttpHandlerMiddlewareTypes = httpHandlerMiddlewareTypes;
-            ApiHandlerMiddlewareTypes = apiHandlerMiddlewareTypes;
-        }
-
-        public JancyExpressAppVerb Verb { get; set; }
-        public string Template { get; set; }
-        public Type HttpHandlerType { get; }
-        public Type ApiHandlerType { get; }
-        public List<Type> HttpHandlerMiddlewareTypes { get; }
-        public List<Type> ApiHandlerMiddlewareTypes { get; }
-    }
-
-    public enum JancyExpressAppVerb
-    {
-        Delete,
-        Get,
-        Post,
-        Put
     }
 }
