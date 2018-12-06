@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace JancyExpressSample.Features.Apple.SimpleGet
 {
-    public class Validator : IApiHandlerDecorator<Request, Response>
+    public class Validator : IApiHandlerMiddleware<Request, Response>
     {
         public Task<Response> Handle(Request request, ApiHandlerDelegate<Request, Response> next)
         {

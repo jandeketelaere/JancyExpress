@@ -4,7 +4,7 @@ namespace JancyExpress
 {
     public delegate Task<TResponse> ApiHandlerDelegate<TRequest, TResponse>(TRequest request);
 
-    public interface IApiHandlerDecorator<TRequest, TResponse>
+    public interface IApiHandlerMiddleware<TRequest, TResponse>
     {
         Task<TResponse> Handle(TRequest request, ApiHandlerDelegate<TRequest, TResponse> next);
     }

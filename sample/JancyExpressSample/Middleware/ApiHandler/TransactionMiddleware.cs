@@ -1,9 +1,9 @@
 ﻿using JancyExpress;
 using System.Threading.Tasks;
 
-namespace JancyExpressSample.Decorators.ApiHandler
+namespace JancyExpressSample.Middleware.ApiHandler
 {
-    public class TransactionDecorator<TRequest, TResponse> : IApiHandlerDecorator<TRequest, TResponse>
+    public class TransactionMiddleware<TRequest, TResponse> : IApiHandlerMiddleware<TRequest, TResponse>
     {
         public Task<TResponse> Handle(TRequest request, ApiHandlerDelegate<TRequest, TResponse> next)
         {

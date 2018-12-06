@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Routing;
 using System.IO;
 using JancyExpressSample.Infrastructure;
 
-namespace JancyExpressSample.Decorators.HttpHandler
+namespace JancyExpressSample.Middleware.HttpHandler
 {
-    public class RequestResponseLoggingDecorator<TRequest, TResponse> : IHttpHandlerDecorator<TRequest, TResponse>
+    public class RequestResponseLoggingMiddleware<TRequest, TResponse> : IHttpHandlerMiddleware<TRequest, TResponse>
     {
         private readonly IJancyLogger _jancyLogger;
 
-        public RequestResponseLoggingDecorator(IJancyLogger jancyLogger)
+        public RequestResponseLoggingMiddleware(IJancyLogger jancyLogger)
         {
             _jancyLogger = jancyLogger;
         }

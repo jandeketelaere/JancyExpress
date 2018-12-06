@@ -2,18 +2,18 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Newtonsoft.Json;
 using System.Net;
 using JancyExpress;
 using JancyExpressSample.Infrastructure;
+using JancyExpress.Extensions;
 
-namespace JancyExpressSample.Decorators.HttpHandler
+namespace JancyExpressSample.Middleware.HttpHandler
 {
-    public class ExceptionDecorator<TRequest, TResponse> : IHttpHandlerDecorator<TRequest, TResponse>
+    public class ExceptionMiddleware<TRequest, TResponse> : IHttpHandlerMiddleware<TRequest, TResponse>
     {
         private readonly IJancyLogger _logger;
 
-        public ExceptionDecorator(IJancyLogger logger)
+        public ExceptionMiddleware(IJancyLogger logger)
         {
             _logger = logger;
         }
@@ -28,10 +28,7 @@ namespace JancyExpressSample.Decorators.HttpHandler
             {
                 _logger.LogError(ex.ToString(), "Exception", request.HttpContext.TraceIdentifier);
 
-                var result = JsonConvert.SerializeObject(new { ErrorMessage = "An unhandled exception occurred." });
-                response.ContentType = "application/json";
-                response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                await response.WriteAsync(result);
+                await response.WriteJson((int)HttpStatusCode.InternalServerError, new { ErrorMessage = "An unhandled exception occurred." });
             }
         }
     }

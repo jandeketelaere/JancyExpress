@@ -1,8 +1,9 @@
 ﻿using JancyExpress;
+using JancyExpress.Configuration;
 using JancyExpress.Extensions;
-using JancyExpressSample.Decorators.ApiHandler;
-using JancyExpressSample.Decorators.HttpHandler;
 using JancyExpressSample.Infrastructure;
+using JancyExpressSample.Middleware.ApiHandler;
+using JancyExpressSample.Middleware.HttpHandler;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -45,8 +46,35 @@ namespace JancyExpressSample
             RegisterLogging(services);
             RegisterHandlers(services, assembly);
             RegisterDecorators(services, assembly);
+            RegisterConfiguration(services);
+        }
 
+        private static void RegisterConfiguration(IServiceCollection services)
+        {
             services.AddScoped<ServiceFactory>(p => p.GetService);
+
+            var configuration = new JancyExpressConfiguration(config =>
+            {
+                config.App(app =>
+                {
+                    app.Use()
+                        .WithHttpHandlerMiddleware(typeof(ExceptionMiddleware<,>))
+                        .WithHttpHandlerMiddleware(typeof(RequestResponseLoggingMiddleware<,>))
+                        .WithApiHandlerMiddleware(typeof(TransactionMiddleware<,>));
+
+                    app.Get("api/apple/simpleget/{name}")
+                        .WithHttpHandlerMiddleware<Features.Apple.SimpleGet.HttpSecurity>()
+                        .WithHttpHandler<Features.Apple.SimpleGet.HttpHandler>()
+                        .WithApiHandlerMiddleware<Features.Apple.SimpleGet.Validator>()
+                        .WithApiHandler<Features.Apple.SimpleGet.ApiHandler>();
+
+                    app.Post("api/apple/simplepost")
+                        .WithHttpHandler<Features.Apple.SimplePost.HttpHandler>();
+                        //.WithApiHandler<Features.Apple.SimplePost.ApiHandler>();
+                });
+            });
+
+            services.AddScoped(_ => configuration);
         }
 
         private static void RegisterLogging(IServiceCollection services)
@@ -58,13 +86,13 @@ namespace JancyExpressSample
         private static void RegisterDecorators(IServiceCollection services, Assembly assembly)
         {
             services.Scan(scan => scan.FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo(typeof(IHttpHandlerDecorator<,>)))
+                .AddClasses(classes => classes.AssignableTo(typeof(IHttpHandlerMiddleware<,>)))
                 .AsSelf()
                 .WithScopedLifetime()
             );
 
             services.Scan(scan => scan.FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo(typeof(IApiHandlerDecorator<,>)))
+                .AddClasses(classes => classes.AssignableTo(typeof(IApiHandlerMiddleware<,>)))
                 .AsSelf()
                 .WithScopedLifetime()
             );
@@ -86,25 +114,9 @@ namespace JancyExpressSample
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder applicationBuilder, IHostingEnvironment env, ServiceFactory serviceFactory)
+        public void Configure(IApplicationBuilder applicationBuilder, IHostingEnvironment env, IServiceProvider serviceProvider)
         {
-            applicationBuilder.UseJancyExpress(serviceFactory, app =>
-            {
-                app.Use()
-                    .WithHttpHandlerDecorator(typeof(ExceptionDecorator<,>))
-                    .WithHttpHandlerDecorator(typeof(RequestResponseLoggingDecorator<,>))
-                    .WithApiHandlerDecorator(typeof(TransactionDecorator<,>));
-
-                app.Get("api/apple/simpleget/{name}")
-                    .WithHttpHandlerDecorator<Features.Apple.SimpleGet.HttpSecurity>()
-                    .WithHttpHandler<Features.Apple.SimpleGet.HttpHandler>()
-                    .WithApiHandlerDecorator<Features.Apple.SimpleGet.Validator>()
-                    .WithApiHandler<Features.Apple.SimpleGet.ApiHandler>();
-
-                app.Post("api/apple/simplepost")
-                    .WithHttpHandler<Features.Apple.SimplePost.HttpHandler>();
-                    //.WithApiHandler<Features.Apple.SimplePost.ApiHandler>();
-            });
+            applicationBuilder.UseJancyExpress(serviceProvider);
         }
     }
 }
