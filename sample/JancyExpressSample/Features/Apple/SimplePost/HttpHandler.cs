@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace JancyExpressSample.Features.Apple.SimplePost
 {
-    public class HttpHandler : IHttpHandler<Request, int>
+    public class HttpHandler : IHttpHandler<Request>
     {
-        public async Task Handle(HttpRequest request, HttpResponse response, RouteData routeData, ApiHandlerDelegate<Request, int> apiHandle)
+        public async Task Handle(HttpRequest request, HttpResponse response, RouteData routeData, ApiHandlerDelegate<Request, Unit> apiHandle)
         {
             var data = request.As<Request>();
 
-            var result = await apiHandle(data);
+            await apiHandle(data);
 
-            await response.WriteJson(200, result);
+            await response.WriteJson(200, data.Value1);
         }
     }
 }

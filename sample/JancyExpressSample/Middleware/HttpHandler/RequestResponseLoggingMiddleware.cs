@@ -7,7 +7,7 @@ using JancyExpressSample.Infrastructure;
 
 namespace JancyExpressSample.Middleware.HttpHandler
 {
-    public class RequestResponseLoggingMiddleware<TRequest, TResponse> : IHttpHandlerMiddleware<TRequest, TResponse>
+    public class RequestResponseLoggingMiddleware : IHttpHandlerMiddleware
     {
         private readonly IJancyLogger _jancyLogger;
 

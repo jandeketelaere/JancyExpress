@@ -47,8 +47,8 @@ namespace JancyExpress
                 return handler.Handle(request);
             };
 
-            var apiHandlerMiddlewares = GetApiHandlerMiddlewares(appVerbConfiguration, serviceFactory)
-                .Concat(GetGlobalApiHandlerMiddlewares(appUseConfiguration, serviceFactory));
+            var apiHandlerMiddlewares = GetApiHandlerMiddlewares(appVerbConfiguration.ApiHandlerMiddlewareTypes, serviceFactory)
+                .Concat(GetApiHandlerMiddlewares(appUseConfiguration.ApiHandlerMiddlewareTypes, serviceFactory));
 
             foreach (var middleware in apiHandlerMiddlewares)
             {
@@ -67,8 +67,8 @@ namespace JancyExpress
                 return handler.Handle(request, response, routeData, (req) => apiHandler(req));
             };
 
-            var httpHandlerMiddlewares = GetHttpHandlerMiddlewares(appVerbConfiguration, serviceFactory)
-                .Concat(GetGlobalHttpHandlerMiddlewares(appUseConfiguration, serviceFactory));
+            var httpHandlerMiddlewares = GetHttpHandlerMiddlewares(appVerbConfiguration.HttpHandlerMiddlewareTypes, serviceFactory)
+                .Concat(GetHttpHandlerMiddlewares(appUseConfiguration.HttpHandlerMiddlewareTypes, serviceFactory));
 
             foreach (var middleware in httpHandlerMiddlewares)
             {
@@ -79,51 +79,21 @@ namespace JancyExpress
             return httpHandler;
         }
 
-        private IEnumerable<IHttpHandlerMiddleware<TRequest, TResponse>> GetGlobalHttpHandlerMiddlewares(JancyExpressAppUseConfiguration appUseConfiguration, ServiceFactory serviceFactory)
+        private IEnumerable<IHttpHandlerMiddleware> GetHttpHandlerMiddlewares(List<Type> middlewareTypes, ServiceFactory serviceFactory)
         {
-            foreach (var middlewareType in Enumerable.Reverse(appUseConfiguration.HttpHandlerMiddlewareTypes))
+            foreach (var middlewareType in Enumerable.Reverse(middlewareTypes))
             {
-                var type = middlewareType.IsGenericType ? middlewareType.MakeGenericType(typeof(TRequest), typeof(TResponse)) : middlewareType;
-
-                //todo: validation
-                if (serviceFactory.GetInstance(type) is IHttpHandlerMiddleware<TRequest, TResponse> obj)
-                    yield return obj;
+                yield return serviceFactory.GetInstance<IHttpHandlerMiddleware>(middlewareType);
             }
         }
 
-        private IEnumerable<IHttpHandlerMiddleware<TRequest, TResponse>> GetHttpHandlerMiddlewares(JancyExpressAppVerbConfiguration appVerbConfiguration, ServiceFactory serviceFactory)
+        private IEnumerable<IApiHandlerMiddleware<TRequest, TResponse>> GetApiHandlerMiddlewares(List<Type> middlewareTypes, ServiceFactory serviceFactory)
         {
-            foreach (var middlewareType in Enumerable.Reverse(appVerbConfiguration.HttpHandlerMiddlewareTypes))
+            foreach (var middlewareType in Enumerable.Reverse(middlewareTypes))
             {
                 var type = middlewareType.IsGenericType ? middlewareType.MakeGenericType(typeof(TRequest), typeof(TResponse)) : middlewareType;
 
-                //todo: validation
-                if (serviceFactory.GetInstance(type) is IHttpHandlerMiddleware<TRequest, TResponse> obj)
-                    yield return obj;
-            }
-        }
-
-        private IEnumerable<IApiHandlerMiddleware<TRequest, TResponse>> GetApiHandlerMiddlewares(JancyExpressAppVerbConfiguration appVerbConfiguration, ServiceFactory serviceFactory)
-        {
-            foreach(var middlewareType in Enumerable.Reverse(appVerbConfiguration.ApiHandlerMiddlewareTypes))
-            {
-                var type = middlewareType.IsGenericType ? middlewareType.MakeGenericType(typeof(TRequest), typeof(TResponse)) : middlewareType;
-
-                //todo: validation
-                if (serviceFactory.GetInstance(type) is IApiHandlerMiddleware<TRequest, TResponse> obj)
-                    yield return obj;
-            }
-        }
-
-        private IEnumerable<IApiHandlerMiddleware<TRequest, TResponse>> GetGlobalApiHandlerMiddlewares(JancyExpressAppUseConfiguration appUseConfiguration, ServiceFactory serviceFactory)
-        {
-            foreach (var middlewareType in Enumerable.Reverse(appUseConfiguration.ApiHandlerMiddlewareTypes))
-            {
-                var type = middlewareType.IsGenericType ? middlewareType.MakeGenericType(typeof(TRequest), typeof(TResponse)) : middlewareType;
-
-                //todo: validation
-                if (serviceFactory.GetInstance(type) is IApiHandlerMiddleware<TRequest, TResponse> obj)
-                    yield return obj;
+                yield return (IApiHandlerMiddleware<TRequest, TResponse>) serviceFactory.GetInstance(type);
             }
         }
     }

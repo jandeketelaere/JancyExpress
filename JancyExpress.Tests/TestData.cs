@@ -12,41 +12,41 @@ namespace JancyExpress.Tests
 
     public class HttpHandler1 : IHttpHandler<Request1, Response1>
     {
-        public async Task Handle(HttpRequest request, HttpResponse response, RouteData routeData, ApiHandlerDelegate<Request1, Response1> apiHandle) {}
+        public Task Handle(HttpRequest request, HttpResponse response, RouteData routeData, ApiHandlerDelegate<Request1, Response1> apiHandle) => Task.CompletedTask;
     }
 
     public class HttpHandler2 : IHttpHandler<Request2, Response2>
     {
-        public async Task Handle(HttpRequest request, HttpResponse response, RouteData routeData, ApiHandlerDelegate<Request2, Response2> apiHandle) { }
+        public Task Handle(HttpRequest request, HttpResponse response, RouteData routeData, ApiHandlerDelegate<Request2, Response2> apiHandle) => Task.CompletedTask;
     }
 
     public class ApiHandler1 : IApiHandler<Request1, Response1>
     {
-        public async Task<Response1> Handle(Request1 request) => new Response1();
+        public Task<Response1> Handle(Request1 request) => Task.FromResult(new Response1());
     }
 
     public class ApiHandler2 : IApiHandler<Request2, Response2>
     {
-        public async Task<Response2> Handle(Request2 request) => new Response2();
+        public Task<Response2> Handle(Request2 request) => Task.FromResult(new Response2());
     }
 
-    public class HttpHandlerMiddleware1 : IHttpHandlerMiddleware<Request1, Response1>
+    public class HttpHandlerMiddleware1 : IHttpHandlerMiddleware
     {
-        public async Task Handle(HttpRequest httpRequest, HttpResponse httpResponse, RouteData routeData, HttpHandlerDelegate next) {}
+        public Task Handle(HttpRequest httpRequest, HttpResponse httpResponse, RouteData routeData, HttpHandlerDelegate next) => Task.CompletedTask;
     }
 
-    public class HttpHandlerMiddleware2 : IHttpHandlerMiddleware<Request2, Response2>
+    public class HttpHandlerMiddleware2 : IHttpHandlerMiddleware
     {
-        public async Task Handle(HttpRequest httpRequest, HttpResponse httpResponse, RouteData routeData, HttpHandlerDelegate next) {}
+        public Task Handle(HttpRequest httpRequest, HttpResponse httpResponse, RouteData routeData, HttpHandlerDelegate next) => Task.CompletedTask;
     }
 
     public class ApiHandlerMiddleware1 : IApiHandlerMiddleware<Request1, Response1>
     {
-        public async Task<Response1> Handle(Request1 request, ApiHandlerDelegate<Request1, Response1> next) => new Response1();
+        public Task<Response1> Handle(Request1 request, ApiHandlerDelegate<Request1, Response1> next) => Task.FromResult(new Response1());
     }
 
     public class ApiHandlerMiddleware2 : IApiHandlerMiddleware<Request2, Response2>
     {
-        public async Task<Response2> Handle(Request2 request, ApiHandlerDelegate<Request2, Response2> next) => new Response2();
+        public Task<Response2> Handle(Request2 request, ApiHandlerDelegate<Request2, Response2> next) => Task.FromResult(new Response2());
     }
 }

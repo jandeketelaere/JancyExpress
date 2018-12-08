@@ -58,8 +58,8 @@ namespace JancyExpressSample
                 config.App(app =>
                 {
                     app.Use()
-                        .WithHttpHandlerMiddleware(typeof(ExceptionMiddleware<,>))
-                        .WithHttpHandlerMiddleware(typeof(RequestResponseLoggingMiddleware<,>))
+                        .WithHttpHandlerMiddleware<ExceptionMiddleware>()
+                        .WithHttpHandlerMiddleware<RequestResponseLoggingMiddleware>()
                         .WithApiHandlerMiddleware(typeof(TransactionMiddleware<,>));
 
                     app.Get("api/apple/simpleget/{name}")
@@ -69,7 +69,9 @@ namespace JancyExpressSample
                         .WithApiHandler<Features.Apple.SimpleGet.ApiHandler>();
 
                     app.Post("api/apple/simplepost")
-                        .WithHttpHandler<Features.Apple.SimplePost.HttpHandler>();
+                        .WithHttpHandler<Features.Apple.SimplePost.HttpHandler>()
+                        .WithApiHandlerMiddleware<Features.Apple.SimplePost.Validator>()
+                        .WithApiHandler<Features.Apple.SimplePost.ApiHandler>();
                 });
             });
 
@@ -85,7 +87,7 @@ namespace JancyExpressSample
         private static void RegisterMiddleware(IServiceCollection services, Assembly assembly)
         {
             services.Scan(scan => scan.FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo(typeof(IHttpHandlerMiddleware<,>)))
+                .AddClasses(classes => classes.AssignableTo(typeof(IHttpHandlerMiddleware)))
                 .AsSelf()
                 .WithScopedLifetime()
             );

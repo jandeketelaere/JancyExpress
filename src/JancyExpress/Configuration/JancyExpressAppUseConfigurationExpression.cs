@@ -6,10 +6,10 @@ namespace JancyExpress.Configuration
     public interface IJancyExpressAppUseConfigurationExpression
     {
         /// <summary>
-        /// Registers an HTTP handler middleware with interface IHttpHandlerMiddleware&lt;TRequest, TResponse&gt;.
+        /// Registers an HTTP handler middleware with interface IHttpHandlerMiddleware.
         /// </summary>
         /// <param name="type">The type to register.</param>
-        IJancyExpressAppUseConfigurationExpression WithHttpHandlerMiddleware(Type type);
+        IJancyExpressAppUseConfigurationExpression WithHttpHandlerMiddleware<THttpHandlerMiddleware>();
 
         /// <summary>
         /// Registers an API handler middleware with interface IApiHandlerMiddleware&lt;TRequest, TResponse&gt;.
@@ -29,9 +29,9 @@ namespace JancyExpress.Configuration
             ApiHandlerMiddlewareTypes = new List<Type>();
         }
 
-        public IJancyExpressAppUseConfigurationExpression WithHttpHandlerMiddleware(Type type)
+        public IJancyExpressAppUseConfigurationExpression WithHttpHandlerMiddleware<THttpHandlerMiddleware>()
         {
-            HttpHandlerMiddlewareTypes.Add(type);
+            HttpHandlerMiddlewareTypes.Add(typeof(THttpHandlerMiddleware));
             return this;
         }
 

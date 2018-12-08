@@ -6,7 +6,7 @@ namespace JancyExpress
 {
     public delegate Task HttpHandlerDelegate();
 
-    public interface IHttpHandlerMiddleware<TRequest, TResponse>
+    public interface IHttpHandlerMiddleware
     {
         Task Handle(HttpRequest httpRequest, HttpResponse httpResponse, RouteData routeData, HttpHandlerDelegate next);
     }

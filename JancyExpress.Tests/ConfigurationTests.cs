@@ -11,7 +11,7 @@ namespace JancyExpress.Tests
         public void EmptyConfiguration_Should_Not_Wire_Anything()
         {
             var configuration = new JancyExpressConfiguration(config => {});
-                        
+
             configuration.ValidateOnStartup.ShouldBe(false);
             configuration.AppUseConfiguration.ApiHandlerMiddlewareTypes.ShouldBeEmpty();
             configuration.AppUseConfiguration.HttpHandlerMiddlewareTypes.ShouldBeEmpty();
@@ -37,8 +37,8 @@ namespace JancyExpress.Tests
                 config.App(app =>
                 {
                     app.Use()
-                        .WithHttpHandlerMiddleware(typeof(HttpHandlerMiddleware1))
-                        .WithHttpHandlerMiddleware(typeof(HttpHandlerMiddleware2))
+                        .WithHttpHandlerMiddleware<HttpHandlerMiddleware1>()
+                        .WithHttpHandlerMiddleware<HttpHandlerMiddleware2>()
                         .WithApiHandlerMiddleware(typeof(ApiHandlerMiddleware1))
                         .WithApiHandlerMiddleware(typeof(ApiHandlerMiddleware2));
                 });

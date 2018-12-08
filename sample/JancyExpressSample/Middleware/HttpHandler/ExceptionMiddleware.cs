@@ -9,7 +9,7 @@ using JancyExpress.Extensions;
 
 namespace JancyExpressSample.Middleware.HttpHandler
 {
-    public class ExceptionMiddleware<TRequest, TResponse> : IHttpHandlerMiddleware<TRequest, TResponse>
+    public class ExceptionMiddleware : IHttpHandlerMiddleware
     {
         private readonly IJancyLogger _logger;
 

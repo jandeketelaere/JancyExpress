@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace JancyExpressSample.Features.Apple.SimpleGet
 {
-    public class HttpSecurity : IHttpHandlerMiddleware<Request, Response>
+    public class HttpSecurity : IHttpHandlerMiddleware
     {
         public Task Handle(HttpRequest httpRequest, HttpResponse httpResponse, RouteData routeData, HttpHandlerDelegate next)
         {

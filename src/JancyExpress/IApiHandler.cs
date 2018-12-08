@@ -7,7 +7,5 @@ namespace JancyExpress
         Task<TResponse> Handle(TRequest request);
     }
 
-    public interface IApiHandler<TRequest> : IApiHandler<TRequest, Unit>
-    {
-    }
+    public interface IApiHandler<TRequest> : IApiHandler<TRequest, Unit> {}
 }
