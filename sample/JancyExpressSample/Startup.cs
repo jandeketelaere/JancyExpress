@@ -70,6 +70,9 @@ namespace JancyExpressSample
                         .WithHttpHandler<Features.Apple.SimplePost.HttpHandler>()
                         .WithApiHandlerMiddleware<Features.Apple.SimplePost.Validator>()
                         .WithApiHandler<Features.Apple.SimplePost.ApiHandler>();
+
+                    app.Get("api/pear/simpleget/{name}")
+                        .WithHttpHandler<Features.Pear.SimpleGet.HttpHandler>();
                 });
             });
 
@@ -107,6 +110,12 @@ namespace JancyExpressSample
 
             services.Scan(scan => scan.FromAssemblies(assembly)
                 .AddClasses(classes => classes.AssignableTo(typeof(IApiHandler<,>)))
+                .AsSelf()
+                .WithScopedLifetime()
+            );
+
+            services.Scan(scan => scan.FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo(typeof(IHttpHandler)))
                 .AsSelf()
                 .WithScopedLifetime()
             );

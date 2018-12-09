@@ -11,5 +11,10 @@ namespace JancyExpress
         Task Handle(HttpRequest request, HttpResponse response, RouteData routeData, ApiHandlerDelegate<TRequest, TResponse> apiHandle);
     }
 
-    public interface IHttpHandler<TRequest> : IHttpHandler<TRequest, Unit> {}
+    public interface IHttpHandler<TRequest> : IHttpHandler<TRequest, Unit> { }
+
+    public interface IHttpHandler
+    {
+        Task Handle(HttpRequest request, HttpResponse response, RouteData routeData);
+    }
 }

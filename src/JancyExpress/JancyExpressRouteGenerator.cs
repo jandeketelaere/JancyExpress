@@ -6,12 +6,65 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JancyExpress.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JancyExpress
 {
     internal interface IJancyExpressRouteGenerator
     {
         JancyExpressRoute GenerateRoute(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration);
+    }
+
+    internal class JancyExpressRouteGenerator : IJancyExpressRouteGenerator
+    {
+        public JancyExpressRoute GenerateRoute(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration)
+        {
+            return new JancyExpressRoute
+            {
+                Verb = appVerbConfiguration.Verb.ToString(),
+                Template = appVerbConfiguration.Template,
+                Handler = GetHandlerFunc(appVerbConfiguration, appUseConfiguration)
+            };
+        }
+
+        private Func<HttpRequest, HttpResponse, RouteData, Task> GetHandlerFunc(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration)
+        {
+            return (request, response, routeData) =>
+            {
+                var serviceProvider = request.HttpContext.RequestServices.GetService<IServiceProvider>();
+                var httpHandler = GetHttpHandler(appVerbConfiguration, appUseConfiguration, serviceProvider, request, response, routeData);
+
+                return httpHandler();
+            };
+        }
+
+        private HttpHandlerDelegate GetHttpHandler(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration, IServiceProvider serviceProvider, HttpRequest request, HttpResponse response, RouteData routeData)
+        {
+            HttpHandlerDelegate httpHandler = () =>
+            {
+                var handler = serviceProvider.GetService<IHttpHandler>(appVerbConfiguration.HttpHandlerType);
+                return handler.Handle(request, response, routeData);
+            };
+
+            var httpHandlerMiddlewares = GetHttpHandlerMiddlewares(appVerbConfiguration.HttpHandlerMiddlewareTypes, serviceProvider)
+                .Concat(GetHttpHandlerMiddlewares(appUseConfiguration.HttpHandlerMiddlewareTypes, serviceProvider));
+
+            foreach (var middleware in httpHandlerMiddlewares)
+            {
+                var previous = httpHandler;
+                httpHandler = () => middleware.Handle(request, response, routeData, previous);
+            }
+
+            return httpHandler;
+        }
+
+        private IEnumerable<IHttpHandlerMiddleware> GetHttpHandlerMiddlewares(List<Type> middlewareTypes, IServiceProvider serviceProvider)
+        {
+            foreach (var middlewareType in Enumerable.Reverse(middlewareTypes))
+            {
+                yield return serviceProvider.GetService<IHttpHandlerMiddleware>(middlewareType);
+            }
+        }
     }
 
     internal class JancyExpressRouteGenerator<TRequest, TResponse> : IJancyExpressRouteGenerator
@@ -30,7 +83,7 @@ namespace JancyExpress
         {
             return (request, response, routeData) =>
             {
-                var serviceProvider = (IServiceProvider) request.HttpContext.RequestServices.GetService(typeof(IServiceProvider));
+                var serviceProvider = request.HttpContext.RequestServices.GetService<IServiceProvider>();
                 var apiHandler = GetApiHandler(appVerbConfiguration, appUseConfiguration, serviceProvider);
                 var httpHandler = GetHttpHandler(appVerbConfiguration, appUseConfiguration, serviceProvider, request, response, routeData, apiHandler);
 

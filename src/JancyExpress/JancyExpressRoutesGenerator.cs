@@ -24,22 +24,31 @@ namespace JancyExpress
 
         private JancyExpressRoute GenerateRoute(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration)
         {
-            var (RequestType, ResponseType) = GetRequestResponseType(appVerbConfiguration.HttpHandlerType, typeof(IHttpHandler<,>));
-
-            var routeGeneratorType = typeof(JancyExpressRouteGenerator<,>).MakeGenericType(RequestType, ResponseType);
-            var routeGenerator = (IJancyExpressRouteGenerator)Activator.CreateInstance(routeGeneratorType);
+            var routeGenerator = GetRouteGenerator(appVerbConfiguration, appUseConfiguration);
 
             return routeGenerator.GenerateRoute(appVerbConfiguration, appUseConfiguration);
         }
 
-        private (Type RequestType, Type ResponseType) GetRequestResponseType(Type type, Type genericType)
+        private IJancyExpressRouteGenerator GetRouteGenerator(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration)
         {
-            var types = type.GetInterfaces()
+            var genericArguments = GetGenericArguments(appVerbConfiguration.HttpHandlerType, typeof(IHttpHandler<,>));
+
+            if (!genericArguments.Any())
+                return new JancyExpressRouteGenerator();
+
+            (Type requestType, Type responseType) = (genericArguments[0], genericArguments[1]);
+
+            var routeGeneratorType = typeof(JancyExpressRouteGenerator<,>).MakeGenericType(requestType, responseType);
+
+            return (IJancyExpressRouteGenerator)Activator.CreateInstance(routeGeneratorType);
+        }
+
+        private IList<Type> GetGenericArguments(Type type, Type genericType)
+        {
+            return type.GetInterfaces()
                 .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == genericType)
                 .SelectMany(i => i.GetGenericArguments())
                 .ToList();
-
-            return (types[0], types[1]);
         }
     }
 }
