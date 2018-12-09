@@ -8,12 +8,10 @@ namespace JancyExpress
     internal class JancyExpressRoutesGenerator
     {
         private readonly JancyExpressConfiguration _configuration;
-        private readonly ServiceFactory _serviceFactory;
 
-        public JancyExpressRoutesGenerator(JancyExpressConfiguration configuration, ServiceFactory serviceFactory)
+        internal JancyExpressRoutesGenerator(JancyExpressConfiguration configuration)
         {
             _configuration = configuration;
-            _serviceFactory = serviceFactory;
         }
 
         internal IEnumerable<JancyExpressRoute> GenerateRoutes()
@@ -31,7 +29,7 @@ namespace JancyExpress
             var routeGeneratorType = typeof(JancyExpressRouteGenerator<,>).MakeGenericType(RequestType, ResponseType);
             var routeGenerator = (IJancyExpressRouteGenerator)Activator.CreateInstance(routeGeneratorType);
 
-            return routeGenerator.GenerateRoute(appVerbConfiguration, appUseConfiguration, _serviceFactory);
+            return routeGenerator.GenerateRoute(appVerbConfiguration, appUseConfiguration);
         }
 
         private (Type RequestType, Type ResponseType) GetRequestResponseType(Type type, Type genericType)

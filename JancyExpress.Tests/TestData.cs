@@ -42,11 +42,11 @@ namespace JancyExpress.Tests
 
     public class ApiHandlerMiddleware1 : IApiHandlerMiddleware<Request1, Response1>
     {
-        public Task<Response1> Handle(Request1 request, ApiHandlerDelegate<Request1, Response1> next) => Task.FromResult(new Response1());
+        public Task<Response1> Handle(Request1 request, ApiHandlerDelegate<Response1> next) => Task.FromResult(new Response1());
     }
 
     public class ApiHandlerMiddleware2 : IApiHandlerMiddleware<Request2, Response2>
     {
-        public Task<Response2> Handle(Request2 request, ApiHandlerDelegate<Request2, Response2> next) => Task.FromResult(new Response2());
+        public Task<Response2> Handle(Request2 request, ApiHandlerDelegate<Response2> next) => Task.FromResult(new Response2());
     }
 }

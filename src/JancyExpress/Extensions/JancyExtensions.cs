@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace JancyExpress.Extensions
 {
@@ -13,17 +12,16 @@ namespace JancyExpress.Extensions
             return services.AddRouting();
         }
 
-        public static IApplicationBuilder UseJancyExpress(this IApplicationBuilder applicationBuilder, IServiceProvider serviceProvider)
+        public static IApplicationBuilder UseJancyExpress(this IApplicationBuilder applicationBuilder)
         {
             var routeBuilder = new RouteBuilder(applicationBuilder);
-                        
-            var serviceFactory = serviceProvider.GetService<ServiceFactory>();
-            var configuration = serviceFactory.GetInstance<JancyExpressConfiguration>();
+            
+            var configuration = applicationBuilder.ApplicationServices.GetService<JancyExpressConfiguration>();
 
             if (configuration.ValidateOnStartup)
                 configuration.Validate();
 
-            var routesGenerator = new JancyExpressRoutesGenerator(configuration, serviceFactory);
+            var routesGenerator = new JancyExpressRoutesGenerator(configuration);
             
             foreach (var route in routesGenerator.GenerateRoutes())
             {

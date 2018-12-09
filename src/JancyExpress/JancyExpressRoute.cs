@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace JancyExpress
 {
-    public class JancyExpressRoute
+    internal class JancyExpressRoute
     {
         public string Verb { get; set; }
         public string Template { get; set; }

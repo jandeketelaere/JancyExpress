@@ -6,12 +6,15 @@ namespace JancyExpressSample.Features.Apple.SimplePost
 {
     public class Validator : IApiHandlerMiddleware<Request>
     {
-        public Task<Unit> Handle(Request request, ApiHandlerDelegate<Request, Unit> next)
+        public async Task<Unit> Handle(Request request, ApiHandlerDelegate<Unit> next)
         {
+            //todo: no exception
             if (request.Value1 > 100)
                 throw new Exception("Value1 cannot be larger than 100");
 
-            return Unit.Task;
+            await next();
+
+            return Unit.Value;
         }
     }
 }

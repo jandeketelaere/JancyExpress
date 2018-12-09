@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 
 namespace JancyExpress
 {
+    public delegate Task<TResponse> ApiHandlerDelegate<TRequest, TResponse>(TRequest request);
+
     public interface IHttpHandler<TRequest, TResponse>
     {
         Task Handle(HttpRequest request, HttpResponse response, RouteData routeData, ApiHandlerDelegate<TRequest, TResponse> apiHandle);

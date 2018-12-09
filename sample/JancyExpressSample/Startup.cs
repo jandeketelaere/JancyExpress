@@ -51,8 +51,6 @@ namespace JancyExpressSample
 
         private static void RegisterConfiguration(IServiceCollection services)
         {
-            services.AddScoped<ServiceFactory>(p => p.GetService);
-
             var configuration = new JancyExpressConfiguration(config =>
             {
                 config.App(app =>
@@ -115,9 +113,9 @@ namespace JancyExpressSample
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder applicationBuilder, IHostingEnvironment env, IServiceProvider serviceProvider)
+        public void Configure(IApplicationBuilder applicationBuilder)
         {
-            applicationBuilder.UseJancyExpress(serviceProvider);
+            applicationBuilder.UseJancyExpress();
         }
     }
 }
