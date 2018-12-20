@@ -31,7 +31,7 @@ namespace JancyExpress
         {
             return (request, response, routeData) =>
             {
-                var serviceProvider = request.HttpContext.RequestServices.GetService<IServiceProvider>();
+                var serviceProvider = request.HttpContext.RequestServices;
                 var httpHandler = GetHttpHandler(appVerbConfiguration, appUseConfiguration, serviceProvider, request, response, routeData);
 
                 return httpHandler();
@@ -83,7 +83,7 @@ namespace JancyExpress
         {
             return (request, response, routeData) =>
             {
-                var serviceProvider = request.HttpContext.RequestServices.GetService<IServiceProvider>();
+                var serviceProvider = request.HttpContext.RequestServices;
                 var apiHandler = GetApiHandler(appVerbConfiguration, appUseConfiguration, serviceProvider);
                 var httpHandler = GetHttpHandler(appVerbConfiguration, appUseConfiguration, serviceProvider, request, response, routeData, apiHandler);
 
