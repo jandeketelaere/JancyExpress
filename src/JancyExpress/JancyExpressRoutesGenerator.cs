@@ -7,31 +7,27 @@ namespace JancyExpress
 {
     internal class JancyExpressRoutesGenerator
     {
-        private readonly JancyExpressConfiguration _configuration;
-
-        internal JancyExpressRoutesGenerator(JancyExpressConfiguration configuration)
+        internal IEnumerable<JancyExpressRoute> GenerateRoutes(List<JancyExpressRouterConfiguration> routerConfigurations, JancyExpressGlobalRouterConfiguration globalRouterConfiguration)
         {
-            _configuration = configuration;
-        }
-
-        internal IEnumerable<JancyExpressRoute> GenerateRoutes()
-        {
-            foreach(var appVerbConfiguration in _configuration.AppVerbConfigurationList)
+            foreach(var routerConfiguration in routerConfigurations)
             {
-                yield return GenerateRoute(appVerbConfiguration, _configuration.AppUseConfiguration);
+                foreach(var routingConfiguration in routerConfiguration.RoutingConfigurations)
+                {
+                    yield return GenerateRoute(routingConfiguration, routerConfiguration.ScopedRoutingConfiguration, globalRouterConfiguration);
+                }
             }
         }
 
-        private JancyExpressRoute GenerateRoute(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration)
+        private JancyExpressRoute GenerateRoute(JancyExpressRoutingConfiguration routingConfiguration, JancyExpressScopedRoutingConfiguration scopedRoutingConfiguration, JancyExpressGlobalRouterConfiguration globalRouterConfiguration)
         {
-            var routeGenerator = GetRouteGenerator(appVerbConfiguration, appUseConfiguration);
+            var routeGenerator = GetRouteGenerator(routingConfiguration.HttpHandlerType);
 
-            return routeGenerator.GenerateRoute(appVerbConfiguration, appUseConfiguration);
+            return routeGenerator.GenerateRoute(routingConfiguration, scopedRoutingConfiguration, globalRouterConfiguration.GlobalRoutingConfiguration);
         }
 
-        private IJancyExpressRouteGenerator GetRouteGenerator(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration)
+        private IJancyExpressRouteGenerator GetRouteGenerator(Type httpHandlerType)
         {
-            var genericArguments = GetGenericArguments(appVerbConfiguration.HttpHandlerType, typeof(IHttpHandler<,>));
+            var genericArguments = GetGenericArguments(httpHandlerType, typeof(IHttpHandler<,>));
 
             if (!genericArguments.Any())
                 return new JancyExpressRouteGenerator();

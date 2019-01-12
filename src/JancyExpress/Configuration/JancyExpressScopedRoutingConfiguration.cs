@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace JancyExpress.Configuration
 {
-    public class JancyExpressAppUseConfiguration
+    public class JancyExpressScopedRoutingConfiguration
     {
-        public JancyExpressAppUseConfiguration(List<Type> httpHandlerMiddlewareTypes, List<Type> apiHandlerMiddlewareTypes)
+        public JancyExpressScopedRoutingConfiguration(List<Type> httpHandlerMiddlewareTypes, List<Type> apiHandlerMiddlewareTypes)
         {
             HttpHandlerMiddlewareTypes = httpHandlerMiddlewareTypes;
             ApiHandlerMiddlewareTypes = apiHandlerMiddlewareTypes;

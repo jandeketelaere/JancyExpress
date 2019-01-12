@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace JancyExpress.Configuration
 {
@@ -11,15 +9,9 @@ namespace JancyExpress.Configuration
         private JancyExpressConfiguration(JancyExpressConfigurationExpression configurationExpression)
         {
             ValidateOnStartup = configurationExpression.ValidateOnStartup;
-            AppUseConfiguration = new JancyExpressAppUseConfiguration(configurationExpression.AppConfiguration.UseConfiguration.HttpHandlerMiddlewareTypes, configurationExpression.AppConfiguration.UseConfiguration.ApiHandlerMiddlewareTypes);
-            AppVerbConfigurationList = GetAppVerbConfigurationList(configurationExpression.AppConfiguration).ToList();
         }
 
         public bool ValidateOnStartup { get; }
-
-        public JancyExpressAppUseConfiguration AppUseConfiguration { get; }
-
-        public List<JancyExpressAppVerbConfiguration> AppVerbConfigurationList { get; }
 
         private static JancyExpressConfigurationExpression Build(Action<IJancyExpressConfigurationExpression> config)
         {
@@ -28,14 +20,6 @@ namespace JancyExpress.Configuration
             config(expression);
 
             return expression;
-        }
-
-        private IEnumerable<JancyExpressAppVerbConfiguration> GetAppVerbConfigurationList(JancyExpressAppConfigurationExpression appConfiguration)
-        {
-            foreach (var getConfiguration in appConfiguration.VerbConfigurationList)
-            {
-                yield return new JancyExpressAppVerbConfiguration(getConfiguration.Verb, getConfiguration.Template, getConfiguration.HttpHandlerType, getConfiguration.ApiHandlerType, getConfiguration.HttpHandlerMiddlewareTypes, getConfiguration.ApiHandlerMiddlewareTypes);
-            }
         }
 
         public void Validate()

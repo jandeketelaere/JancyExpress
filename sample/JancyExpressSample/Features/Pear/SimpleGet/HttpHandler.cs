@@ -12,7 +12,10 @@ namespace JancyExpressSample.Features.Pear.SimpleGet
         {
             var name = routeData.As<string>("name");
 
-            await response.WriteJson(200, name);
+            await response.WriteJson(200, new
+            {
+                Name = name
+            });
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace JancyExpress.Configuration
 {
-    public enum JancyExpressAppVerb
+    public enum JancyExpressRoutingVerb
     {
         Delete,
         Get,

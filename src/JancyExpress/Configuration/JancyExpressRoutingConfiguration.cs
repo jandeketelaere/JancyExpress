@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace JancyExpress.Configuration
 {
-    public class JancyExpressAppVerbConfiguration
+    public class JancyExpressRoutingConfiguration
     {
-        public JancyExpressAppVerbConfiguration(JancyExpressAppVerb verb, string template, Type httpHandlerType, Type apiHandlerType, List<Type> httpHandlerMiddlewareTypes, List<Type> apiHandlerMiddlewareTypes)
+        public JancyExpressRoutingConfiguration(JancyExpressRoutingVerb verb, string template, Type httpHandlerType, Type apiHandlerType, List<Type> httpHandlerMiddlewareTypes, List<Type> apiHandlerMiddlewareTypes)
         {
             Verb = verb;
             Template = template;
@@ -15,8 +15,8 @@ namespace JancyExpress.Configuration
             ApiHandlerMiddlewareTypes = apiHandlerMiddlewareTypes;
         }
 
-        public JancyExpressAppVerb Verb { get; set; }
-        public string Template { get; set; }
+        public JancyExpressRoutingVerb Verb { get; }
+        public string Template { get; }
         public Type HttpHandlerType { get; }
         public Type ApiHandlerType { get; }
         public List<Type> HttpHandlerMiddlewareTypes { get; }

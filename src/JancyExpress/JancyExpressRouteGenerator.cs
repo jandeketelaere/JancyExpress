@@ -12,42 +12,44 @@ namespace JancyExpress
 {
     internal interface IJancyExpressRouteGenerator
     {
-        JancyExpressRoute GenerateRoute(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration);
+        JancyExpressRoute GenerateRoute(JancyExpressRoutingConfiguration routingConfiguration, JancyExpressScopedRoutingConfiguration scopedRoutingConfiguration, JancyExpressGlobalRoutingConfiguration globalRoutingConfiguration);
     }
 
     internal class JancyExpressRouteGenerator : IJancyExpressRouteGenerator
     {
-        public JancyExpressRoute GenerateRoute(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration)
+        public JancyExpressRoute GenerateRoute(JancyExpressRoutingConfiguration routingConfiguration, JancyExpressScopedRoutingConfiguration scopedRoutingConfiguration, JancyExpressGlobalRoutingConfiguration globalRoutingConfiguration)
         {
             return new JancyExpressRoute
             {
-                Verb = appVerbConfiguration.Verb.ToString(),
-                Template = appVerbConfiguration.Template,
-                Handler = GetHandlerFunc(appVerbConfiguration, appUseConfiguration)
+                Verb = routingConfiguration.Verb.ToString(),
+                Template = routingConfiguration.Template,
+                Handler = GetHandlerFunc(routingConfiguration, scopedRoutingConfiguration, globalRoutingConfiguration)
             };
         }
 
-        private Func<HttpRequest, HttpResponse, RouteData, Task> GetHandlerFunc(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration)
+        private Func<HttpRequest, HttpResponse, RouteData, Task> GetHandlerFunc(JancyExpressRoutingConfiguration routingConfiguration, JancyExpressScopedRoutingConfiguration scopedRoutingConfiguration, JancyExpressGlobalRoutingConfiguration globalRoutingConfiguration)
         {
             return (request, response, routeData) =>
             {
                 var serviceProvider = request.HttpContext.RequestServices;
-                var httpHandler = GetHttpHandler(appVerbConfiguration, appUseConfiguration, serviceProvider, request, response, routeData);
+                var httpHandler = GetHttpHandler(routingConfiguration, scopedRoutingConfiguration, globalRoutingConfiguration, serviceProvider, request, response, routeData);
 
                 return httpHandler();
             };
         }
 
-        private HttpHandlerDelegate GetHttpHandler(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration, IServiceProvider serviceProvider, HttpRequest request, HttpResponse response, RouteData routeData)
+        private HttpHandlerDelegate GetHttpHandler(JancyExpressRoutingConfiguration routingConfiguration, JancyExpressScopedRoutingConfiguration scopedRoutingConfiguration, JancyExpressGlobalRoutingConfiguration globalRoutingConfiguration, IServiceProvider serviceProvider, HttpRequest request, HttpResponse response, RouteData routeData)
         {
             HttpHandlerDelegate httpHandler = () =>
             {
-                var handler = serviceProvider.GetService<IHttpHandler>(appVerbConfiguration.HttpHandlerType);
+                var handler = serviceProvider.GetService<IHttpHandler>(routingConfiguration.HttpHandlerType);
                 return handler.Handle(request, response, routeData);
             };
 
-            var httpHandlerMiddlewares = GetHttpHandlerMiddlewares(appVerbConfiguration.HttpHandlerMiddlewareTypes, serviceProvider)
-                .Concat(GetHttpHandlerMiddlewares(appUseConfiguration.HttpHandlerMiddlewareTypes, serviceProvider));
+            var httpHandlerMiddlewares =
+                GetHttpHandlerMiddlewares(routingConfiguration.HttpHandlerMiddlewareTypes, serviceProvider)
+                .Concat(GetHttpHandlerMiddlewares(scopedRoutingConfiguration.HttpHandlerMiddlewareTypes, serviceProvider))
+                .Concat(GetHttpHandlerMiddlewares(globalRoutingConfiguration.HttpHandlerMiddlewareTypes, serviceProvider));
 
             foreach (var middleware in httpHandlerMiddlewares)
             {
@@ -69,41 +71,43 @@ namespace JancyExpress
 
     internal class JancyExpressRouteGenerator<TRequest, TResponse> : IJancyExpressRouteGenerator
     {
-        public JancyExpressRoute GenerateRoute(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration)
+        public JancyExpressRoute GenerateRoute(JancyExpressRoutingConfiguration routingConfiguration, JancyExpressScopedRoutingConfiguration scopedRoutingConfiguration, JancyExpressGlobalRoutingConfiguration globalRoutingConfiguration)
         {
             return new JancyExpressRoute
             {
-                Verb = appVerbConfiguration.Verb.ToString(),
-                Template = appVerbConfiguration.Template,
-                Handler = GetHandlerFunc(appVerbConfiguration, appUseConfiguration)
+                Verb = routingConfiguration.Verb.ToString(),
+                Template = routingConfiguration.Template,
+                Handler = GetHandlerFunc(routingConfiguration, scopedRoutingConfiguration, globalRoutingConfiguration)
             };
         }
 
-        private Func<HttpRequest, HttpResponse, RouteData, Task> GetHandlerFunc(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration)
+        private Func<HttpRequest, HttpResponse, RouteData, Task> GetHandlerFunc(JancyExpressRoutingConfiguration routingConfiguration, JancyExpressScopedRoutingConfiguration scopedRoutingConfiguration, JancyExpressGlobalRoutingConfiguration globalRoutingConfiguration)
         {
             return (request, response, routeData) =>
             {
                 var serviceProvider = request.HttpContext.RequestServices;
-                var apiHandler = GetApiHandler(appVerbConfiguration, appUseConfiguration, serviceProvider);
-                var httpHandler = GetHttpHandler(appVerbConfiguration, appUseConfiguration, serviceProvider, request, response, routeData, apiHandler);
+                var apiHandler = GetApiHandler(routingConfiguration, scopedRoutingConfiguration, globalRoutingConfiguration, serviceProvider);
+                var httpHandler = GetHttpHandler(routingConfiguration, scopedRoutingConfiguration, globalRoutingConfiguration, serviceProvider, request, response, routeData, apiHandler);
 
                 return httpHandler();
             };
         }
 
-        private ApiHandlerDelegate<TRequest, TResponse> GetApiHandler(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration, IServiceProvider serviceProvider)
+        private ApiHandlerDelegate<TRequest, TResponse> GetApiHandler(JancyExpressRoutingConfiguration routingConfiguration, JancyExpressScopedRoutingConfiguration scopedRoutingConfiguration, JancyExpressGlobalRoutingConfiguration globalRoutingConfiguration, IServiceProvider serviceProvider)
         {
-            if (appVerbConfiguration.ApiHandlerType == null)
+            if (routingConfiguration.ApiHandlerType == null)
                 return (request) => throw new NotImplementedException($"Could not execute ApiHandlerDelegate because no API handler was registered for request '{typeof(TRequest)}' and response '{typeof(TResponse)}'");
 
             ApiHandlerDelegate<TRequest, TResponse> apiHandler = (request) =>
             {
-                var handler = serviceProvider.GetService<IApiHandler<TRequest, TResponse>>(appVerbConfiguration.ApiHandlerType);
+                var handler = serviceProvider.GetService<IApiHandler<TRequest, TResponse>>(routingConfiguration.ApiHandlerType);
                 return handler.Handle(request);
             };
 
-            var apiHandlerMiddlewares = GetApiHandlerMiddlewares(appVerbConfiguration.ApiHandlerMiddlewareTypes, serviceProvider)
-                .Concat(GetApiHandlerMiddlewares(appUseConfiguration.ApiHandlerMiddlewareTypes, serviceProvider));
+            var apiHandlerMiddlewares =
+                GetApiHandlerMiddlewares(routingConfiguration.ApiHandlerMiddlewareTypes, serviceProvider)
+                .Concat(GetApiHandlerMiddlewares(scopedRoutingConfiguration.ApiHandlerMiddlewareTypes, serviceProvider))
+                .Concat(GetApiHandlerMiddlewares(globalRoutingConfiguration.ApiHandlerMiddlewareTypes, serviceProvider));
 
             foreach (var middleware in apiHandlerMiddlewares)
             {
@@ -114,16 +118,18 @@ namespace JancyExpress
             return apiHandler;
         }
 
-        private HttpHandlerDelegate GetHttpHandler(JancyExpressAppVerbConfiguration appVerbConfiguration, JancyExpressAppUseConfiguration appUseConfiguration, IServiceProvider serviceProvider, HttpRequest request, HttpResponse response, RouteData routeData, ApiHandlerDelegate<TRequest, TResponse> apiHandler)
+        private HttpHandlerDelegate GetHttpHandler(JancyExpressRoutingConfiguration routingConfiguration, JancyExpressScopedRoutingConfiguration scopedRoutingConfiguration, JancyExpressGlobalRoutingConfiguration globalRoutingConfiguration, IServiceProvider serviceProvider, HttpRequest request, HttpResponse response, RouteData routeData, ApiHandlerDelegate<TRequest, TResponse> apiHandler)
         {
             HttpHandlerDelegate httpHandler = () =>
             {
-                var handler = serviceProvider.GetService<IHttpHandler<TRequest, TResponse>>(appVerbConfiguration.HttpHandlerType);
+                var handler = serviceProvider.GetService<IHttpHandler<TRequest, TResponse>>(routingConfiguration.HttpHandlerType);
                 return handler.Handle(request, response, routeData, apiHandler);
             };
 
-            var httpHandlerMiddlewares = GetHttpHandlerMiddlewares(appVerbConfiguration.HttpHandlerMiddlewareTypes, serviceProvider)
-                .Concat(GetHttpHandlerMiddlewares(appUseConfiguration.HttpHandlerMiddlewareTypes, serviceProvider));
+            var httpHandlerMiddlewares =
+                GetHttpHandlerMiddlewares(routingConfiguration.HttpHandlerMiddlewareTypes, serviceProvider)
+                .Concat(GetHttpHandlerMiddlewares(scopedRoutingConfiguration.HttpHandlerMiddlewareTypes, serviceProvider))
+                .Concat(GetHttpHandlerMiddlewares(globalRoutingConfiguration.HttpHandlerMiddlewareTypes, serviceProvider));
 
             foreach (var middleware in httpHandlerMiddlewares)
             {

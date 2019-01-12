@@ -10,7 +10,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
-using System;
 using System.Reflection;
 
 namespace JancyExpressSample
@@ -47,33 +46,14 @@ namespace JancyExpressSample
             RegisterHandlers(services, assembly);
             RegisterMiddleware(services, assembly);
             RegisterConfiguration(services);
+            RegisterRouters(services, assembly);
         }
 
         private static void RegisterConfiguration(IServiceCollection services)
         {
             var configuration = new JancyExpressConfiguration(config =>
             {
-                config.App(app =>
-                {
-                    app.Use()
-                        .WithHttpHandlerMiddleware<ExceptionMiddleware>()
-                        .WithHttpHandlerMiddleware<RequestResponseLoggingMiddleware>()
-                        .WithApiHandlerMiddleware(typeof(TransactionMiddleware<,>));
-
-                    app.Get("api/apple/simpleget/{name}")
-                        .WithHttpHandlerMiddleware<Features.Apple.SimpleGet.HttpSecurity>()
-                        .WithHttpHandler<Features.Apple.SimpleGet.HttpHandler>()
-                        .WithApiHandlerMiddleware<Features.Apple.SimpleGet.Validator>()
-                        .WithApiHandler<Features.Apple.SimpleGet.ApiHandler>();
-
-                    app.Post("api/apple/simplepost")
-                        .WithHttpHandler<Features.Apple.SimplePost.HttpHandler>()
-                        .WithApiHandlerMiddleware<Features.Apple.SimplePost.Validator>()
-                        .WithApiHandler<Features.Apple.SimplePost.ApiHandler>();
-
-                    app.Get("api/pear/simpleget/{name}")
-                        .WithHttpHandler<Features.Pear.SimpleGet.HttpHandler>();
-                });
+                config.ValidateOnStartup = false;
             });
 
             services.AddSingleton(configuration);
@@ -118,6 +98,21 @@ namespace JancyExpressSample
                 .AddClasses(classes => classes.AssignableTo(typeof(IHttpHandler)))
                 .AsSelf()
                 .WithScopedLifetime()
+            );
+        }
+
+        private static void RegisterRouters(IServiceCollection services, Assembly assembly)
+        {
+            services.Scan(scan => scan.FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo<JancyExpressRouter>())
+                .As<JancyExpressRouter>()
+                .WithSingletonLifetime()
+            );
+
+            services.Scan(scan => scan.FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo<JancyExpressGlobalRouter>())
+                .As<JancyExpressGlobalRouter>()
+                .WithSingletonLifetime()
             );
         }
 

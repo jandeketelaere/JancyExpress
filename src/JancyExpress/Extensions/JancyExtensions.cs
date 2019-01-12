@@ -2,6 +2,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace JancyExpress.Extensions
 {
@@ -21,9 +24,12 @@ namespace JancyExpress.Extensions
             if (configuration.ValidateOnStartup)
                 configuration.Validate();
 
-            var routesGenerator = new JancyExpressRoutesGenerator(configuration);
+            var routesGenerator = new JancyExpressRoutesGenerator();
+
+            var routers = applicationBuilder.ApplicationServices.GetServices<JancyExpressRouter>().Cast<IJancyExpressRouter>();
+            var globalRouter = applicationBuilder.ApplicationServices.GetService<JancyExpressGlobalRouter>() as IJancyExpressGlobalRouter;
             
-            foreach (var route in routesGenerator.GenerateRoutes())
+            foreach (var route in routesGenerator.GenerateRoutes(routers.Select(r => r.GetConfiguration()).ToList(), globalRouter?.GetConfiguration() ?? new JancyExpressGlobalRouterConfiguration(new JancyExpressGlobalRoutingConfiguration(new List<Type>(), new List<Type>()))))
             {
                 routeBuilder.MapVerb(route.Verb, route.Template, route.Handler);
             }

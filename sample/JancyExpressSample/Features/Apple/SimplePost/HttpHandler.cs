@@ -14,7 +14,7 @@ namespace JancyExpressSample.Features.Apple.SimplePost
 
             await apiHandle(data);
 
-            await response.WriteJson(200, data.Value1);
+            await response.WriteJson(200, new { Result = data.Value1 });
         }
     }
 }

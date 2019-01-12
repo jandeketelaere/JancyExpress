@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System.Threading.Tasks;
 
-namespace JancyExpressSample.Features.Apple.SimpleGet
+namespace JancyExpressSample.Features.Apple.Middleware.HttpHandler
 {
     public class HttpSecurity : IHttpHandlerMiddleware
     {
